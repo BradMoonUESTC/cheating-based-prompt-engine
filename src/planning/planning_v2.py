@@ -3,12 +3,9 @@ import time
 import requests
 from library.chatgpt_api2 import *
 from dao.entity import Project_Task
-import tqdm
 import os, sys
+from tqdm import tqdm
 import pickle
-import numpy as np
-import pandas as pd
-from sklearn.metrics.pairwise import cosine_similarity
 from library.vectorutils import get_top_k_similar, find_elbow_point, plot_elbow_curve
 from library.embedding_api import get_embbedding
 import re
