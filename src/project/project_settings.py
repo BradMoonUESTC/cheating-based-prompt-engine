@@ -1,0 +1,86 @@
+
+OPENZEPPELIN_CONTRACTS = [
+    "AccessControl",
+    "Context",
+    "EnumerableSet",
+    "IERC20",
+    "IERC721",
+    "IERC721Enumerable",
+    "IERC721Metadata",
+    "IERC721Receiver",
+    "IERC777",
+    "IERC777Recipient",
+    "IERC777Sender",
+    "IERC1155",
+    "IERC1155Receiver",
+    "IERC165",
+    "Ownable",
+    "Pausable",
+    "ReentrancyGuard",
+    "SafeMath",
+    "SafeERC20",
+    "Address",
+    "Counters",
+    "ERC20",
+    "ERC20Burnable",
+    "ERC20Capped",
+    "ERC20Mintable",
+    "ERC20Pausable",
+    "ERC721",
+    "ERC721Burnable",
+    "ERC721Pausable",
+    "ERC777",
+    "ERC1155",
+    "Roles",
+    "PaymentSplitter",
+    "PullPayment",
+    "Escrow",
+    "RefundEscrow",
+    "TimedEscrow",
+    "TokenTimelock",
+    "CappedCrowdsale",
+    "Crowdsale",
+    "MintedCrowdsale",
+    "PausableCrowdsale",
+    "TimedCrowdsale",
+    "PostDeliveryCrowdsale",
+    "WhitelistCrowdsale",
+    "ERC20Snapshot",
+    "ERC20FlashMint",
+    "ERC20Votes",
+    "ERC20VotesComp",
+    "ERC20Permit",
+    "ERC20RebaseUpgradeable",
+    "ERC404",
+    
+    # other contracts
+    "WETH9",
+    "BytesLib"
+]
+OPENZEPPELIN_FUNCTIONS=[
+    "transferFrom",
+    "safeTransferFrom",
+    "mint",
+    "burn",
+    "burnFrom",
+    "transfer",
+    "send"
+    "safeTransfer",
+    "getReward",
+    "_transferFrom",
+    "_safeTransferFrom",
+    "_mint",
+    "_burn",
+    "_burnFrom",
+    "_transfer",
+    "_safeTransfer",
+    "_approve",
+    "permit",
+    "sendETH"
+
+]
+PATH_PARTIAL_WHITE_LIST = ["node_modules", "test", "tests", "testing", "unittest", "unit_test", "unit tests", "unit_testing"
+                    "external", "openzeppelin", "uniswap", "pancakeswap", "legacy", "@", "mock", "mocks"]
+PATH_WHITE_LIST = ["lib"]
+
+FILE_PARTIAL_WHITE_LIST = ["node_modules"]

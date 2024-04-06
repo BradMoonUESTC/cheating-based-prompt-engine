@@ -1,0 +1,15 @@
+{
+  "devDependencies": {
+    "@commitlint/cli": "^17.1.2",
+    "@commitlint/config-conventional": "^17.1.0",
+    "husky": "^8.0.0",
+    "prettier": "3.0.1",
+    "prettier-plugin-solidity": "1.1.3"
+  },
+  "scripts": {
+    "postinstall": "husky install"
+  },
+  "lint-staged": {
+    "*.{css,html,json,jsx,md,sass,scss,ts,tsx,vue,yaml,yml,sol}": "prettier --write"
+  }
+}

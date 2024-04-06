@@ -1,0 +1,1 @@
+print("The docker is build at BUILD_TIME")

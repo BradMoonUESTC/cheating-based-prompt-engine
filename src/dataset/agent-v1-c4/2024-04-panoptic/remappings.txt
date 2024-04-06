@@ -1,0 +1,13 @@
+forge-std/=lib/forge-std/src/
+@openzeppelin/=lib/openzeppelin-contracts/
+solmate/=lib/solmate/src
+univ3-core/=lib/v3-core/contracts
+univ3-periphery/=lib/v3-periphery/contracts
+@contracts/=contracts
+@libraries/=contracts/libraries
+@multicall/=contracts/multicall
+@periphery/=periphery
+@tokens/=contracts/tokens
+@types/=contracts/types
+@scripts/=scripts
+@uniswap/=lib
