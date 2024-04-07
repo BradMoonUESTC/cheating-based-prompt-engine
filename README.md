@@ -9,6 +9,10 @@
 
 3. Refer to the configuration file at `src/dataset/agent-v1-c4/datasets.json` for guidance on setting up your datasets. Once configured, you can execute `main.py` to begin the scanning process.
 
+4. setup the database with the connection string provided in the `.env` file.
+
+5. create db with sql `src/db.sql`
+
 #### Environment Configuration
 Configure your environment by creating a `.env` file with the following contents:
 
@@ -31,6 +35,9 @@ Configure your environment by creating a `.env` file with the following contents
 
 3. 参照 `src/dataset/agent-v1-c4/datasets.json` 配置文件来设置你的数据集。配置完成后，运行 `main.py` 即可开始扫描过程。
 
+4. 设置.env
+
+5. 使用`src/db.sql`创建数据库
 #### 环境配置
 通过创建 `.env` 文件并填写以下内容来配置你的环境：
 
