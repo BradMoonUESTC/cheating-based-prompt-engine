@@ -277,7 +277,7 @@ class PlanningV2(object):
             all_business_flow,all_business_flow_line=self.get_all_business_flow(self.project.functions_to_check)                    
 
         # Process each function with optimized threshold
-        for function in tqdm.tqdm(self.project.functions_to_check, desc="Finding project rules"):
+        for function in tqdm(self.project.functions_to_check, desc="Finding project rules"):
             
             
             name = function['name']

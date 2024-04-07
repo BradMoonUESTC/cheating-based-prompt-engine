@@ -1,0 +1,3 @@
+src/planning/__pycache__/planning_v2.cpython-312.pyc
+*.pyc
+.env
