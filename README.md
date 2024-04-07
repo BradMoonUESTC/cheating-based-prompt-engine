@@ -46,3 +46,10 @@ Configure your environment by creating a `.env` file with the following contents
 
 - `OPENAI_API_KEY=sk-xxxxx`
     - 将 `sk-xxxxx` 替换为你的实际 OpenAI API 密钥。这个密钥使工具能够与 OpenAI 服务进行各种操作，如数据处理或分析。
+# 注意
+1. gpt4效果会更好，gpt3尚未深入尝试
+2. 这个tricky prompt理论上经过轻微变种，可以有效的扫描任何语言，但是尽量需要antlr相应语言的ast解析做支持，因为如果有code slicing，效果会更好
+3. 目前只支持solidity，后续会支持更多语言
+
+# TODO
+刚刚release，还没写完，后续再补充
