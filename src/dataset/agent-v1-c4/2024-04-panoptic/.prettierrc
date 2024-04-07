@@ -1,5 +1,0 @@
-{
-  "printWidth": 100,
-  "singleQuote": false,
-  "plugins": ["prettier-plugin-solidity"]
-}
