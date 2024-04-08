@@ -9,6 +9,9 @@ The key lies in the design of prompts, which has shown excellent results. The co
 
 The essence is encapsulated in one word: "deception."
 
+### Note:
+- This is a type of code understanding logic vulnerability mining that fully stimulates the capabilities of gpt. The control flow type vulnerability detection ability is ineffective and is suitable for real actual projects.
+- Therefore, don’t run tests on meaningless academic vulnerabilities
 ## GPT Engine Usage
 
 ### Vulnerability Scanning
@@ -44,6 +47,9 @@ Configure your environment by creating a `.env` file with the following contents
 - prompt design, not model design
 
 关键一个字在于“骗”
+### 注
+- 这是一种充分激发gpt能力的代码理解型的逻辑漏洞挖掘，控制流类型的漏洞检测能力效果差，适用于真正的实际项目
+- 因此，不要拿那些无意义的学术型漏洞来跑测试
 
 ## GPT Engine 使用说明
 
