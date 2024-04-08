@@ -1,3 +1,14 @@
+## Introduction
+This is a vulnerability mining engine purely based on GPT, requiring no prior knowledge base, no fine-tuning, yet its effectiveness can overwhelmingly surpass most of the current related research. 
+
+The key lies in the design of prompts, which has shown excellent results. The core idea revolves around:
+
+- Being task-driven, not question-driven.
+- Driven by prompts, not by code.
+- Focused on prompt design, not model design.
+
+The essence is encapsulated in one word: "deception."
+
 ## GPT Engine Usage
 
 ### Vulnerability Scanning
@@ -22,7 +33,17 @@ Configure your environment by creating a `.env` file with the following contents
 - `OPENAI_API_KEY=sk-xxxxx`
     - Replace `sk-xxxxx` with your actual OpenAI API key. This key enables the tool to interact with OpenAI services for various operations, such as data processing or analysis.
 
+## 介绍
+这是一个纯基于gpt的漏洞挖掘引擎，不需要任何前置知识库，不需要任何fine-tuning，但效果足可以碾压当前大部分相关研究的效果
 
+核心关键在于prompt的设计，效果非常好
+
+核心思路：
+- task driven, not question driven
+- prompt driven, not code driven
+- prompt design, not model design
+
+关键一个字在于“骗”
 
 ## GPT Engine 使用说明
 

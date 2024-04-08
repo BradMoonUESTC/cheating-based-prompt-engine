@@ -140,7 +140,7 @@ if __name__ == '__main__':
             scan_project(project, engine, True) # scan
             content = ''' '''
             rule = ''' '''
-            # check_function_vul(content, engine, True) # confirm
+            check_function_vul(content, engine, True) # confirm
 
         # elif cmd == 'recheck':
         #     rescan_project_with_gpt4(project.id, engine)
