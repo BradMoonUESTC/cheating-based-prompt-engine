@@ -1,5 +1,0 @@
-
-set DATABASE_URL=postgresql://postgres:1234@localhost:5432/postgres
-set PEZZO_API_KEY=pez_a20c3db0ed18cfd9fcc003d908f5a571
-set PEZZO_PROJECT_ID=clmeshz6f007vwt0he19wbsy0
-set PEZZO_ENVIRONMENT=Production
