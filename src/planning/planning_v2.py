@@ -41,7 +41,7 @@ class PlanningV2(object):
             "Authorization": f"Bearer {api_key}"
         }
         data = {
-            "model": "gpt-4-turbo-preview",
+            "model": os.getenv('BUSINESS_FLOW_MODEL_ID'),
             "response_format": { "type": "json_object" },
             "messages": [
                 {
@@ -290,7 +290,7 @@ class PlanningV2(object):
             if switch_business_code:
                 business_flow_code,line_info_list=self.search_business_flow(all_business_flow, all_business_flow_line,name.split(".")[1], contract_name)
                 if business_flow_code != "not found":
-                    for i in range(5):
+                    for i in range(int(os.getenv('BUSINESS_FLOW_COUNT', 1))):
                         task = Project_Task(
                             project_id=self.project.project_id,
                             name=name,

@@ -32,8 +32,7 @@ class AiEngine(object):
             "Authorization": f"Bearer {api_key}"
         }
         data = {
-            # "model": "gpt-4-turbo-preview",
-            "model":"gpt-3.5-turbo-0125",
+            "model": os.getenv('VUL_MODEL_ID'),  # Replace with your actual OpenAI model
             "messages": [
                 {
                     "role": "user",
