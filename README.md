@@ -1,3 +1,6 @@
+# Recently Updated
+Add function to basiclly support rust language.
+
 ## Introduction
 This is a vulnerability mining engine purely based on GPT, requiring no prior knowledge base, no fine-tuning, yet its effectiveness can overwhelmingly surpass most of the current related research. 
 
