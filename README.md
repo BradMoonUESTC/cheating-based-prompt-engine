@@ -1,6 +1,17 @@
 # Recently Updated
 2024.04.29:
 Add function to basiclly support rust language.
+# TODO
+1. Optimize code structure
+2. Add more language support
+3. Write usage documentation and code analysis
+4. Add command line mode for easy use
+
+
+1. 优化代码结构
+2. 增加更多语言支持
+3. 编写使用文档和代码解析
+4. 增加命令行模式，方便使用
 
 ## Introduction
 This is a vulnerability mining engine purely based on GPT, requiring no prior knowledge base, no fine-tuning, yet its effectiveness can overwhelmingly surpass most of the current related research. 
