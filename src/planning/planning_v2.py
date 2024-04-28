@@ -203,11 +203,17 @@ class PlanningV2(object):
             all_business_flow[contract_name] = {}
             all_business_flow_line[contract_name]={}
             # 提取所有的public和external函数的name，且这些函数不能是view或pure函数
-            all_public_external_function_names = [
-                function['name'].split(".")[1] for function in functions
-                if check_function_if_public_or_external(function['content'])
-                # and not check_function_if_view_or_pure(function['content'])
-            ]
+            if "_rust" in contract_name:
+                all_public_external_function_names = [
+                    function['name'].split(".")[1] for function in functions
+                    if function['visibility']=='public'
+                ]
+            else:
+                all_public_external_function_names = [
+                    function['name'].split(".")[1] for function in functions
+                    if check_function_if_public_or_external(function['content'])
+                    # and not check_function_if_view_or_pure(function['content'])
+                ]
             print("all_public_external_function_names count:",len(all_public_external_function_names))
             # 有了函数名列表，有了contract_code_without_comments，可以进行业务流的GPT提问了
             print("-----------------asking openai for business flow-----------------")
@@ -269,8 +275,8 @@ class PlanningV2(object):
     def do_planning(self):
         tasks = []
         print("Begin do planning...")
-        switch_function_code=False
-        switch_business_code=True
+        switch_function_code=eval(os.getenv('SWITCH_FUNCTION_CODE','False'))
+        switch_business_code=eval(os.getenv('SWITCH_BUSINESS_CODE','True'))
         
 
         if switch_business_code:
@@ -322,35 +328,36 @@ class PlanningV2(object):
                         task_count += 1
             
             if switch_function_code:
-                task = Project_Task(
-                    project_id=self.project.project_id,
-                    name=name,
-                    content=content,
-                    keyword='',
-                    business_type='',
-                    sub_business_type='',
-                    function_type='',
-                    rule='',
-                    result='',
-                    result_gpt4='',
-                    score='',
-                    category='',
-                    contract_code=contract_code,
-                    risklevel='',
-                    similarity_with_rule='',
-                    description='',
-                    start_line=function['start_line'],
-                    end_line=function['end_line'],
-                    relative_file_path=function['relative_file_path'],
-                    absolute_file_path=function['absolute_file_path'],
-                    recommendation='',
-                    title='',
-                    business_flow_code='',
-                    business_flow_lines='',
-                    if_business_flow_scan=0  # Indicating scanned using function code
-                )
-                self.taskmgr.add_task_in_one(task)
-                task_count += 1
+                for i in range(int(os.getenv('BUSINESS_FLOW_COUNT', 1))):
+                    task = Project_Task(
+                        project_id=self.project.project_id,
+                        name=name,
+                        content=content,
+                        keyword=str(random.random()),
+                        business_type='',
+                        sub_business_type='',
+                        function_type='',
+                        rule='',
+                        result='',
+                        result_gpt4='',
+                        score='',
+                        category='',
+                        contract_code=contract_code,
+                        risklevel='',
+                        similarity_with_rule='',
+                        description='',
+                        start_line=function['start_line'],
+                        end_line=function['end_line'],
+                        relative_file_path=function['relative_file_path'],
+                        absolute_file_path=function['absolute_file_path'],
+                        recommendation='',
+                        title='',
+                        business_flow_code='',
+                        business_flow_lines='',
+                        if_business_flow_scan=0  # Indicating scanned using function code
+                    )
+                    self.taskmgr.add_task_in_one(task)
+                    task_count += 1
 
             
         # return tasks    

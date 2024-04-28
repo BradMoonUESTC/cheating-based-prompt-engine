@@ -1,7 +1,7 @@
 import os
 import simplejson
 from typing import Dict
-
+import re
 from antlr4.CommonTokenStream import CommonTokenStream
 from antlr4.InputStream import InputStream as ANTLRInputStream
 
@@ -104,22 +104,96 @@ def parse(
             f.write(s)
     return source_unit
 
+def find_rust_functions(text, filename,hash):
+    regex = r"((?:pub\s+)?fn \w+\([^)]*\)(?:\s*->\s*[^{]*)?\s*\{)"
+    matches = re.finditer(regex, text)
 
+    # 函数列表
+    functions = []
+
+    # 将文本分割成行，用于更容易地计算行号
+    lines = text.split('\n')
+    line_starts = {i: sum(len(line) + 1 for line in lines[:i]) for i in range(len(lines))}
+
+    # 先收集所有函数体，构建完整的函数代码
+    function_bodies = []
+    for match in matches:
+        brace_count = 1
+        function_body_start = match.start()
+        inside_braces = True
+
+        for i in range(match.end(), len(text)):
+            if text[i] == '{':
+                brace_count += 1
+            elif text[i] == '}':
+                brace_count -= 1
+
+            if inside_braces and brace_count == 0:
+                function_body_end = i + 1
+                function_bodies.append(text[function_body_start:function_body_end])
+                break
+
+    # 完整的函数代码字符串
+    contract_code = "\n".join(function_bodies).strip()
+
+    # 再次遍历匹配，创建函数定义
+    for match in re.finditer(regex, text):
+        start_line_number = next(i for i, pos in line_starts.items() if pos > match.start()) - 1
+        brace_count = 1
+        function_body_start = match.start()
+        inside_braces = True
+
+        for i in range(match.end(), len(text)):
+            if text[i] == '{':
+                brace_count += 1
+            elif text[i] == '}':
+                brace_count -= 1
+
+            if inside_braces and brace_count == 0:
+                function_body_end = i + 1
+                end_line_number = next(i for i, pos in line_starts.items() if pos > function_body_end) - 1
+                function_body = text[function_body_start:function_body_end]
+                function_body_lines = function_body.count('\n') + 1
+                visibility = 'public' if 'pub' in match.group(1) else 'private'
+                functions.append({
+                    'type': 'FunctionDefinition',
+                    'name': 'special_'+re.search(r'\bfn\s+(\w+)', match.group(1)).group(1),  # Extract function name from match
+                    'start_line': start_line_number + 1,
+                    'end_line': end_line_number,
+                    'offset_start': 0,
+                    'offset_end': 0,
+                    'content': function_body,
+                    'contract_name': filename.replace('.rs','_rust'+str(hash)),
+                    'contract_code': contract_code,
+                    'modifiers': [],
+                    'stateMutability': None,
+                    'returnParameters': None,
+                    'visibility': visibility,
+                    'node_count': function_body_lines
+                })
+                break
+
+    return functions
 
 def get_antlr_parsing(path):
     with open(path, 'r', encoding='utf-8', errors="ignore") as file:
         code = file.read()
+        hash_value=hash(code)
+    filename = os.path.basename(path)
+    if ".rs" in str(path):
+        rust_functions = find_rust_functions(code, filename,hash_value)
+        return rust_functions
+    else:
+        input_stream = ANTLRInputStream(code)
+        lexer = SolidityLexer(input_stream)
+        token_stream = CommonTokenStream(lexer)
+        parser = SolidityParser(token_stream)
+        tree = parser.sourceUnit()
 
-    input_stream = ANTLRInputStream(code)
-    lexer = SolidityLexer(input_stream)
-    token_stream = CommonTokenStream(lexer)
-    parser = SolidityParser(token_stream)
-    tree = parser.sourceUnit()
+        visitor = SolidityInfoVisitor(code)
+        visitor.visit(tree)
 
-    visitor = SolidityInfoVisitor(code)
-    visitor.visit(tree)
-
-    return visitor.results
+        return visitor.results
 
 
 

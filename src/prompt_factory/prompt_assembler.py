@@ -13,6 +13,6 @@ class PromptAssembler:
     
     def assemble_vul_check_prompt(code,vul):
         ret_prompt=code+"\n"\
-                +vul+"\n"\
+                +str(vul)+"\n"\
                 +VulCheckPrompt.vul_check_prompt()+"\n"
         return ret_prompt  

@@ -2,4 +2,5 @@ src/planning/__pycache__/planning_v2.cpython-312.pyc
 *.pyc
 src/*.pyc
 src/.env
-src/.env
+.DS_Store
+src/__pycache__/ai_engine.cpython-312.pyc

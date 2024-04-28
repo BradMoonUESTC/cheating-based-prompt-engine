@@ -16,7 +16,18 @@
     "zklink-3":{
         "path":"zklink",
         "files":[
-
+        ],
+        "functions":[]
+    },
+    "simon":{
+        "path":"simon",
+        "files":[
+        ],
+        "functions":[]
+    },
+    "hajime2":{
+        "path":"hajime",
+        "files":[
         ],
         "functions":[]
     }

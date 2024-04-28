@@ -123,7 +123,7 @@ class AiEngine(object):
         # 要进行检查的代码粒度
         code_to_be_tested=business_flow_code if if_business_flow_scan=="1" else function_code
         prompt=PromptAssembler.assemble_vul_check_prompt(code_to_be_tested,result)
-        response_final=self.ask_openai_common(prompt)+"\n"+result
+        response_final=str(self.ask_openai_common(prompt))+"\n"+str(result)
         
 
         self.project_taskmgr.update_result(task.id, response_final, False)

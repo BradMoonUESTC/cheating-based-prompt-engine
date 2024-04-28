@@ -53,7 +53,7 @@ class BaseProjectFilter(object):
 
     def filter_file(self, path, filename):
         # 检查文件后缀
-        if not filename.endswith(".sol") or filename.endswith(".t.sol"):
+        if not (filename.endswith(".sol") or filename.endswith(".rs")) or filename.endswith(".t.sol"):
             return True
 
         # 如果白名单不为空，检查文件是否在白名单中
@@ -88,6 +88,11 @@ class BaseProjectFilter(object):
                         return True
         return False
     def filter_contract(self, function):
+        # rust情况下，不进行筛选
+        if '_rust' in function["name"]:
+            return False
+
+        # solidity情况下，进行筛选
         # if "interface " in function['contract_code']:
         #     print("function ", function['name'], " skipped for interface contract")
         # if str(function["contract_name"]).startswith("I"):
