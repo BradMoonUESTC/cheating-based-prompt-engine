@@ -203,7 +203,7 @@ class PlanningV2(object):
             all_business_flow[contract_name] = {}
             all_business_flow_line[contract_name]={}
             # 提取所有的public和external函数的name，且这些函数不能是view或pure函数
-            if "_rust" in contract_name:
+            if "_rust" in str(contract_name) or contract_name is None:
                 all_public_external_function_names = [
                     function['name'].split(".")[1] for function in functions
                     if function['visibility']=='public'

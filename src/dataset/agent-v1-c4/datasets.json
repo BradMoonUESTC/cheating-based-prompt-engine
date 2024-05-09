@@ -25,11 +25,9 @@
         ],
         "functions":[]
     },
-    "hajime2":{
-        "path":"hajime",
-        "files":[
-        ],
-        "functions":[]
+    "debox1":{
+        "path":"debox",
+        "functions":["DBXLockup.lock"]
     }
     
 }

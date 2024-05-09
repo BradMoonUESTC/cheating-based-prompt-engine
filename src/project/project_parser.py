@@ -93,34 +93,37 @@ class BaseProjectFilter(object):
             return False
 
         # solidity情况下，进行筛选
+        if str(function["contract_name"]).startswith("I") and function["contract_name"][1].isupper():
+            print("function ", function['name'], " skipped for interface contract")
+            return True
+        # if str(function["name"].split('.')[1]) in OPENZEPPELIN_FUNCTIONS:
+        #     print("function ", function['name'], " skipped for OZ functions")
+        #     return True
+
+
         # if "interface " in function['contract_code']:
         #     print("function ", function['name'], " skipped for interface contract")
         # if str(function["contract_name"]).startswith("I"):
         #     print("function ", function['name'], " skipped for interface contract")
-        if str(function["contract_name"]).startswith("I") and function["contract_name"][1].isupper():
-            print("function ", function['name'], " skipped for interface contract")
+        if "function init" in str(function["content"]).lower() or "function initialize" in str(function["content"]).lower() or "constructor(" in str(function["content"]).lower() or "receive()" in str(function["content"]).lower() or "fallback()" in str(function["content"]).lower():
+            print("function ", function['name'], " skipped for constructor")
             return True
+        # if str(function["content"]).count(';')*1<=2:
+        #     print("function ", function['name'], " skipped for node count")
+        #     return True
+        # if str(function['contract_name']) in OPENZEPPELIN_CONTRACTS:
+        #     print("function ", function['name'], " skipped for contract filter")
+        #     return True
+
         # if not self.check_function_code_if_statevar_assign(function['content'],function['contract_code']):
         #     print("function ", function['name'], " skipped for statevar assign")
         #     return True
         # if ("require(msg.sender" in str(function["content"]).lower() and "tx.origin" not in str(function["content"])) or "== msg.sender" in str(function["content"]).lower() or "==msg.sender" in str(function["content"]).lower():
         #     print("function ", function['name'], " skipped for onlyowner")
         #     return True
-        if str(function["name"].split('.')[1]) in OPENZEPPELIN_FUNCTIONS:
-            print("function ", function['name'], " skipped for OZ functions")
-            return True
         # if "onlyOwner" in str(function["content"]):
         #     print("function ", function['name'], " skipped for onlyowner")
         #     return True
-        if "function init" in str(function["content"]).lower() or "function initialize" in str(function["content"]).lower() or "constructor(" in str(function["content"]).lower() or "receive()" in str(function["content"]).lower() or "fallback()" in str(function["content"]).lower():
-            print("function ", function['name'], " skipped for constructor")
-            return True
-        if str(function["content"]).count(';')*1<=2:
-            print("function ", function['name'], " skipped for node count")
-            return True
-        if str(function['contract_name']) in OPENZEPPELIN_CONTRACTS:
-            print("function ", function['name'], " skipped for contract filter")
-            return True
         # if re.search(r'.*?(set|get)\s*[A-Z]', function['name']):
         #     print("function ", function['name'], " skipped for set/get pattern")
         #     return True
