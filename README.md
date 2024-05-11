@@ -10,6 +10,7 @@ Add function to basiclly support rust language.
    
 
 审计赏金成果：截止2024年5月，此工具已获得$50000+
+
 Audit bounty results: As of May 2024, this tool has received $50,000+
 
 
