@@ -23,7 +23,7 @@ impl PGObjectStore {
         const MAX_POOL_SIZE_FOR_PROVER: u32 = 2;
 
         let connection_pool = ConnectionPool::builder(&postgres_base_url, MAX_POOL_SIZE_FOR_PROVER)
-            .build()
+            .build();
             .await
             .context("PGObjectStore failed to build a connection pool")
             .unwrap();
