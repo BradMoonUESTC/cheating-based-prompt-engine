@@ -6,10 +6,13 @@ Add function to basiclly support rust language.
 2. Add more language support
 3. Write usage documentation and code analysis
 4. Add command line mode for easy use
-——————
-审计赏金成果：截止2024年5月，此工具已获得$50000+
 
-——————
+   
+
+审计赏金成果：截止2024年5月，此工具已获得$50000+
+Audit bounty results: As of May 2024, this tool has received $50,000+
+
+
 ------
 1. 优化代码结构
 2. 增加更多语言支持
