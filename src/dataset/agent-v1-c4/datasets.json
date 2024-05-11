@@ -25,9 +25,24 @@
         ],
         "functions":[]
     },
-    "debox1":{
+    "debox0509":{
         "path":"debox",
-        "functions":["DBXLockup.lock"]
+        "functions":["DBXLockup.lock","DBXLockup._calculate","DBXLockup.release"]
+    },
+    "memplat2":{
+        "path":"memplat",
+        "files":[
+        ],
+        "functions":[]
+    },
+    "deliver":{
+        "path":"deliver",
+        "files":[
+
+        ],
+
+        "functions":[]
     }
+    
     
 }

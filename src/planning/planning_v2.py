@@ -206,7 +206,7 @@ class PlanningV2(object):
             if "_rust" in str(contract_name) or contract_name is None:
                 all_public_external_function_names = [
                     function['name'].split(".")[1] for function in functions
-                    if function['visibility']=='public'
+                    # if function['visibility']=='public' #有些private函数也可能是业务流的起点，还是扫一下
                 ]
             else:
                 all_public_external_function_names = [

@@ -31,6 +31,7 @@ contract DBXLockup {
   event Lockup(address indexed beneficiary, uint256 amount, uint256 interval, uint256 releaseTimes);
   event AcceptLockup(address indexed beneficiary, bool ok);
 
+  uint256 private constant _ONE = 1e18;
   IERC20 public immutable dbx;
   mapping(address => Lock[]) public locked;
   mapping(address => bool) public canLock;
@@ -84,13 +85,12 @@ contract DBXLockup {
   function lock(address beneficiary, uint256 lockAmount, uint256 interval, uint256 releaseTimes) external {
     require(canLock[beneficiary], "DBXLockup: not allowed to lock");
     require(locked[beneficiary].length <= 16, "DBXLockup: lock limit reached"); // only allow 16 locks per address
-    require(lockAmount >= 10000 ether, "DBXLockup: lock amount too low"); // safety check
-    require(interval >= 1 hours, "DBXLockup: interval too short");
-    require(releaseTimes >= 1, "DBXLockup: release times too low");
-    require(interval <= 365 days, "DBXLockup: interval too long");
+    require(interval >= 1 hours && interval <= 365 days, "DBXLockup: interval invalid");
+    require(releaseTimes >= 1 && releaseTimes * interval <= 5 * 365 days, "DBXLockup: release times invalid");
+    require(lockAmount >= 10000 * _ONE, "DBXLockup: lock amount too low");
 
     uint256 oneReleaseAmount = lockAmount / releaseTimes;
-    require(oneReleaseAmount > 0, "DBXLockup: release amount too low");
+    require(oneReleaseAmount >= _ONE, "DBXLockup: release amount too low");
 
     // transfer
     dbx.safeTransferFrom(msg.sender, address(this), lockAmount);
@@ -124,7 +124,8 @@ contract DBXLockup {
         releaseable += ant;
         // update lock
         item.lockAmount -= ant;
-        item.nextReleaseAt += item.interval;
+        uint256 releaseTimes = (block.timestamp - item.nextReleaseAt) / item.interval + 1;
+        item.nextReleaseAt += releaseTimes * item.interval;
 
         // remove empty lock,but keep the first one.
         if (item.lockAmount == 0 && i > 0) {
@@ -144,10 +145,16 @@ contract DBXLockup {
   }
 
   // @dev calculate the releaseable amount
-  function _calculate(Lock storage item) private view returns (uint256 releaseable) {
-    if (item.lockAmount > 0 && item.nextReleaseAt <= block.timestamp) {
-      releaseable = item.oneReleaseAmount;
-      if (releaseable > item.lockAmount) releaseable = item.lockAmount;
+  function _calculate(Lock storage item) private view returns (uint256) {
+    if (block.timestamp < item.nextReleaseAt) return 0;
+    unchecked {
+      uint256 balance = item.lockAmount;
+      if (balance < 2 * item.oneReleaseAmount) {
+        return balance;
+      }
+      uint256 releaseTimes = (block.timestamp - item.nextReleaseAt) / item.interval + 1;
+      uint256 releaseable = item.oneReleaseAmount * releaseTimes;
+      return releaseable > balance ? balance : releaseable;
     }
   }
 }
