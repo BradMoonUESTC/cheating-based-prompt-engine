@@ -1,6 +1,10 @@
 # Recently Updated
 2024.04.29:
 Add function to basiclly support rust language.
+2024.05.16:
+Add support for cross-contract vulnerability confirmation.
+upadte the structure of the db
+add CN explaination
 # TODO
 1. Optimize code structure
 2. Add more language support
