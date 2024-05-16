@@ -92,7 +92,7 @@ class AiEngine(object):
                 prompt=PromptAssembler.assemble_prompt(code_to_be_tested)
                 response_vul=self.ask_openai_common(prompt)
                 response_vul = response_vul if response_vul is not None else "no"                
-                self.project_taskmgr.update_result(task.id, response_vul, is_gpt4)
+                self.project_taskmgr.update_result(task.id, response_vul, "")
     def do_scan(self, is_gpt4=False, filter_func=None):
         self.llm.init_conversation()
 
@@ -116,19 +116,29 @@ class AiEngine(object):
         response_final=""
         starttime=time.time()
         result = task.get_result(False)
-        function_code=task.content
-        if_business_flow_scan = task.if_business_flow_scan
-        business_flow_code = task.business_flow_code
-        
-        # 要进行检查的代码粒度
-        code_to_be_tested=business_flow_code if if_business_flow_scan=="1" else function_code
-        prompt=PromptAssembler.assemble_vul_check_prompt(code_to_be_tested,result)
-        response_final=str(self.ask_openai_common(prompt))+"\n"+str(result)
-        
+        result_CN=task.get_result_CN()
+        if result_CN is not None and len(result_CN) > 0:
+            print("\t skipped (scanned)")
+        else:
+            print("\t to confirm")
+            function_code=task.content
+            if_business_flow_scan = task.if_business_flow_scan
+            business_flow_code = task.business_flow_code
+            business_flow_context=task.business_flow_context
+            # business_flow_context=''
+            # 要进行检查的代码粒度
+            code_to_be_tested=business_flow_code+"\n"+business_flow_context if if_business_flow_scan=="1" else function_code
+            prompt=PromptAssembler.assemble_vul_check_prompt(code_to_be_tested,result)
+            response_final=str(self.ask_openai_common(prompt))+"\n"+str(result)
+            prompt_CN=response_final+"用中文解释一下这个漏洞"
+            response_final_CN=str(self.ask_openai_common(prompt_CN))
 
-        self.project_taskmgr.update_result(task.id, response_final, False)
-        endtime=time.time()
-        print("time cost of one task:",endtime-starttime)
+
+
+            self.project_taskmgr.update_result(task.id, response_final, response_final_CN)
+            endtime=time.time()
+            print("time cost of one task:",endtime-starttime)
+        
     def check_function_vul(self):
         self.llm.init_conversation()
         tasks = self.project_taskmgr.get_task_list()

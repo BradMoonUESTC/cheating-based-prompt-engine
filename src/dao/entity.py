@@ -41,11 +41,12 @@ class Project_Task(Base):
     title=Column(String)
     business_flow_code=Column(String)
     business_flow_lines=Column(String)
+    business_flow_context=Column(String)
     if_business_flow_scan=Column(String)
 
-    fieldNames = ['name', 'content', 'keyword', 'business_type', 'sub_business_type', 'function_type', 'rule', 'result', 'result_gpt4','score','category','contract_code','risklevel','similarity_with_rule','description','start_line','end_line','relative_file_path','absolute_file_path','recommendation','title','business_flow_code','business_flow_lines','if_business_flow_scan']
+    fieldNames = ['name', 'content', 'keyword', 'business_type', 'sub_business_type', 'function_type', 'rule', 'result', 'result_gpt4','score','category','contract_code','risklevel','similarity_with_rule','description','start_line','end_line','relative_file_path','absolute_file_path','recommendation','title','business_flow_code','business_flow_lines','business_flow_context','if_business_flow_scan']
 
-    def __init__(self, project_id, name, content, keyword, business_type, sub_business_type, function_type, rule, result='', result_gpt4='',score='0.00',category='',contract_code='',risklevel='',similarity_with_rule='0.00',description='',start_line='',end_line='',relative_file_path='',absolute_file_path='',recommendation='',title='',business_flow_code='',business_flow_lines='',if_business_flow_scan='0'):
+    def __init__(self, project_id, name, content, keyword, business_type, sub_business_type, function_type, rule, result='', result_gpt4='',score='0.00',category='',contract_code='',risklevel='',similarity_with_rule='0.00',description='',start_line='',end_line='',relative_file_path='',absolute_file_path='',recommendation='',title='',business_flow_code='',business_flow_lines='',business_flow_context='',if_business_flow_scan='0'):
         self.project_id = project_id
         self.name = name
         self.content = content
@@ -71,6 +72,7 @@ class Project_Task(Base):
         self.title=title
         self.business_flow_code=business_flow_code
         self.business_flow_lines=business_flow_lines
+        self.business_flow_context=business_flow_context
         self.if_business_flow_scan=if_business_flow_scan
 
 
@@ -100,6 +102,7 @@ class Project_Task(Base):
             'title':self.title,
             'business_flow_code':self.business_flow_code,
             'business_flow_lines':self.business_flow_lines,
+            'business_flow_context':self.business_flow_context,
             'if_business_flow_scan':self.if_business_flow_scan
         }
     
@@ -110,7 +113,10 @@ class Project_Task(Base):
             self.result = result
 
     def get_result(self, is_gpt4 = False):
-        result = self.result_gpt4 if is_gpt4 else self.result
+        result = self.result
+        return None if result == '' else result
+    def get_result_CN(self):
+        result = self.result_gpt4
         return None if result == '' else result
     
     def get_key(self):

@@ -176,6 +176,42 @@ class PlanningV2(object):
 
         # 将集合转换为列表并返回
         return list(unique_functions)
+    def identify_contexts(self, functions_to_check):
+        """
+        Identify sub-calls and parent-calls for each function in functions_to_check,
+        only including calls that are not in the same contract.
+        Returns a dictionary with function names as keys and their sub-calls and parent-calls as values,
+        including the content of the sub-calls and parent-calls.
+        """
+        contexts = {}
+        calls = {function["name"]: {"sub_calls": set(), "parent_calls": set()} for function in functions_to_check}
+
+        for function in functions_to_check:
+            function_name = function["name"]
+            function_content = function["content"]
+            function_contract_name = function["contract_name"]
+
+            for other_function in functions_to_check:
+                other_function_name = other_function["name"]
+                other_function_content = other_function["content"]
+                other_function_contract_name = other_function["contract_name"]
+
+                # Check if the other function is not in the same contract
+                if function_contract_name != other_function_contract_name:
+                    if function_name.split(".")[1] in other_function_content:
+                        calls[function_name]["parent_calls"].add((other_function_name, other_function_content))
+
+                    if other_function_name.split(".")[1] in function_content:
+                        calls[function_name]["sub_calls"].add((other_function_name, other_function_content))
+        
+        for function_name, call_data in calls.items():
+            contexts[function_name] = {
+                "sub_calls": [{"name": name, "content": content} for name, content in call_data["sub_calls"]],
+                "parent_calls": [{"name": name, "content": content} for name, content in call_data["parent_calls"]]
+            }
+
+        return contexts
+
     def get_all_business_flow(self,functions_to_check):
         """
         Extracts all business flows for a list of functions.
@@ -188,10 +224,11 @@ class PlanningV2(object):
         from library.sgp.utilities.contract_extractor import check_function_if_view_or_pure
 
         grouped_functions = group_functions_by_contract(functions_to_check)
-
+        contexts = self.identify_contexts(functions_to_check)
         # 遍历grouped_functions，按每个合约代码进行业务流抽取
         all_business_flow = {}
         all_business_flow_line={}
+        all_business_flow_context = {}
         print("grouped contract count:",len(grouped_functions))
         for contract_info in grouped_functions:
             print("———————————————————————processing contract_info:",contract_info['contract_name'],"—————————————————————————")
@@ -202,6 +239,7 @@ class PlanningV2(object):
             # 初始化合约名字典
             all_business_flow[contract_name] = {}
             all_business_flow_line[contract_name]={}
+            all_business_flow_context[contract_name] = {}
             # 提取所有的public和external函数的name，且这些函数不能是view或pure函数
             if "_rust" in str(contract_name) or contract_name is None:
                 all_public_external_function_names = [
@@ -243,13 +281,22 @@ class PlanningV2(object):
                 # 获取拼接后的业务流代码
                 ask_business_flow_code = self.extract_and_concatenate_functions_content(function_lists, contract_info)
 
+                # 在 contexts 中获取扩展后的业务流内容
+                extended_flow_code = ""
+                for function in function_lists:
+                    context = contexts.get(contract_name + "." + function, {})
+                    parent_calls = context.get("parent_calls", [])
+                    sub_calls = context.get("sub_calls", [])
+                    for call in parent_calls + sub_calls:
+                        extended_flow_code += call["content"] + "\n"
+                all_business_flow_context[contract_name][public_external_function_name] = extended_flow_code.strip()
                 # 将结果存储为键值对，其中键是函数名，值是对应的业务流代码
                 all_business_flow[contract_name][public_external_function_name] = ask_business_flow_code
                 all_business_flow_line[contract_name][public_external_function_name] = line_info_list
-        return all_business_flow,all_business_flow_line    
+        return all_business_flow,all_business_flow_line,all_business_flow_context    
         # 此时 all_business_flow 为一个字典，包含了每个合约及其对应的业务流
     
-    def search_business_flow(self,all_business_flow, all_business_flow_line,function_name, contract_name):
+    def search_business_flow(self,all_business_flow, all_business_flow_line,all_business_flow_context, function_name, contract_name):
         """
         Search for the business flow code based on a function name and contract name.
 
@@ -263,15 +310,16 @@ class PlanningV2(object):
             # Check if the function_name exists within the nested dictionary for the contract
             contract_flows = all_business_flow[contract_name]
             contract_flows_line=all_business_flow_line[contract_name]
+            contract_flows_context=all_business_flow_context[contract_name]
             if function_name in contract_flows:
                 # Return the business flow code for the function
-                return contract_flows[function_name],contract_flows_line[function_name]
+                return contract_flows[function_name],contract_flows_line[function_name],contract_flows_context[function_name]
             else:
                 # Function name not found within the contract's business flows
-                return "not found",""
+                return "not found","",""
         else:
             # Contract name not found in the all_business_flow dictionary
-            return "not found",""
+            return "not found","",""
     def do_planning(self):
         tasks = []
         print("Begin do planning...")
@@ -280,7 +328,7 @@ class PlanningV2(object):
         
 
         if switch_business_code:
-            all_business_flow,all_business_flow_line=self.get_all_business_flow(self.project.functions_to_check)                    
+            all_business_flow,all_business_flow_line,all_business_flow_context=self.get_all_business_flow(self.project.functions_to_check)                    
 
         # Process each function with optimized threshold
         for function in tqdm(self.project.functions_to_check, desc="Finding project rules"):
@@ -294,7 +342,7 @@ class PlanningV2(object):
             print(f"————————Processing function: {name}————————")
             # business_task_item_id = 
             if switch_business_code:
-                business_flow_code,line_info_list=self.search_business_flow(all_business_flow, all_business_flow_line,name.split(".")[1], contract_name)
+                business_flow_code,line_info_list,other_contract_context=self.search_business_flow(all_business_flow, all_business_flow_line,all_business_flow_context, name.split(".")[1], contract_name)
                 if business_flow_code != "not found":
                     for i in range(int(os.getenv('BUSINESS_FLOW_COUNT', 1))):
                         task = Project_Task(
@@ -322,6 +370,7 @@ class PlanningV2(object):
                             title='',
                             business_flow_code=business_flow_code,
                             business_flow_lines=line_info_list,
+                            business_flow_context=other_contract_context,
                             if_business_flow_scan=1  # Indicating scanned using business flow code
                         )
                         self.taskmgr.add_task_in_one(task)
@@ -354,6 +403,7 @@ class PlanningV2(object):
                         title='',
                         business_flow_code='',
                         business_flow_lines='',
+                        business_flow_context='',
                         if_business_flow_scan=0  # Indicating scanned using function code
                     )
                     self.taskmgr.add_task_in_one(task)

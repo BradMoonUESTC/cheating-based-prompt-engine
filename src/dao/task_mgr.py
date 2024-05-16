@@ -26,8 +26,8 @@ class ProjectTaskMgr(object):
     def _query_task_by_project_id(self, session, id):
         return session.query(Project_Task).filter_by(project_id=id).filter(Project_Task.result.like('%PATCH INFO%')).all()
     
-    def add_task(self, name, content, keyword, business_type, sub_business_type, function_type, rule, result='', result_gpt4='', score='0.00', category='', contract_code='', risklevel='',similarity_with_rule='',description='',start_line='',end_line='',relative_file_path='',absolute_file_path='', recommendation='',title='',business_flow_code='',business_flow_lines='',if_business_flow_scan='', **kwargs):
-        task = Project_Task(self.project_id, name, content, keyword, business_type, sub_business_type, function_type, rule, result, result_gpt4, score, category, contract_code, risklevel,similarity_with_rule,description,start_line,end_line,relative_file_path,absolute_file_path, recommendation,title,business_flow_code,business_flow_lines,if_business_flow_scan)
+    def add_task(self, name, content, keyword, business_type, sub_business_type, function_type, rule, result='', result_gpt4='', score='0.00', category='', contract_code='', risklevel='',similarity_with_rule='',description='',start_line='',end_line='',relative_file_path='',absolute_file_path='', recommendation='',title='',business_flow_code='',business_flow_lines='',business_flow_context='',if_business_flow_scan='', **kwargs):
+        task = Project_Task(self.project_id, name, content, keyword, business_type, sub_business_type, function_type, rule, result, result_gpt4, score, category, contract_code, risklevel,similarity_with_rule,description,start_line,end_line,relative_file_path,absolute_file_path, recommendation,title,business_flow_code,business_flow_lines,business_flow_context,if_business_flow_scan)
         self._operate_in_session(self._add_task, task, **kwargs)
 
     def _add_task(self, session, task, commit=True):
@@ -48,14 +48,11 @@ class ProjectTaskMgr(object):
     def _get_task_list(self, session):
         return list(session.query(Project_Task).filter_by(project_id=self.project_id).all())
 
-    def update_result(self, id, result, is_gpt4):
-        self._operate_in_session(self._update_result, id, result, is_gpt4)
+    def update_result(self, id, result, result_CN):
+        self._operate_in_session(self._update_result, id, result, result_CN)
 
-    def _update_result(self, session, id, result, is_gpt4):
-        if is_gpt4:
-            session.query(Project_Task).filter_by(id=id).update({Project_Task.result_gpt4: result})
-        else:
-            session.query(Project_Task).filter_by(id=id).update({Project_Task.result: result})
+    def _update_result(self, session, id, result, result_CN):
+        session.query(Project_Task).filter_by(id=id).update({Project_Task.result: result, Project_Task.result_gpt4: result_CN})
         session.commit()
     def update_similarity_generated_referenced_score(self, id, similarity_with_rule):
         self._operate_in_session(self._update_similarity_generated_referenced_score, id, similarity_with_rule)
