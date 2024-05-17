@@ -50,6 +50,52 @@
         ],
 
         "functions":[]
+    },
+    "arbitrum":{
+        "path":"arbitrum",
+        "files":[
+            "libraries/Error.sol",
+            "challengeV2/IAssertionChain.sol",
+            "challengeV2/EdgeChallengeManager.sol",
+            "bridge/SequencerInbox.sol",
+            "bridge/ISequencerInbox.sol",
+            "bridge/DelayBufferTypes.sol",
+            "bridge/DelayBuffer.sol",
+            "assertionStakingPool/StakingPoolCreatorUtils.sol",
+            "assertionStakingPool/EdgeStakingPoolCreator.sol",
+            "assertionStakingPool/EdgeStakingPool.sol",
+            "assertionStakingPool/AssertionStakingPoolCreator.sol",
+            "assertionStakingPool/AssertionStakingPool.sol",
+            "assertionStakingPool/AbsBoldStakingPool.sol",
+            "rollup/RollupUserLogic.sol",
+            "rollup/RollupProxy.sol",
+            "rollup/RollupLib.sol",
+            "rollup/RollupCreator.sol",
+            "rollup/RollupCore.sol",
+            "rollup/RollupAdminLogic.sol",
+            "rollup/IRollupLogic.sol",
+            "rollup/IRollupCore.sol",
+            "rollup/IRollupAdmin.sol",
+            "rollup/Config.sol",
+            "rollup/BridgeCreator.sol",
+            "rollup/BOLDUpgradeAction.sol",
+            "rollup/AssertionState.sol",
+            "rollup/Assertion.sol",
+            "challengeV2/libraries/UintUtilsLib.sol",
+            "challengeV2/libraries/MerkleTreeLib.sol",
+            "challengeV2/libraries/Enums.sol",
+            "challengeV2/libraries/EdgeChallengeManagerLib.sol",
+            "challengeV2/libraries/ChallengeErrors.sol",
+            "challengeV2/libraries/ChallengeEdgeLib.sol",
+            "challengeV2/libraries/ArrayUtilsLib.sol",
+            "assertionStakingPool/interfaces/IEdgeStakingPoolCreator.sol",
+            "assertionStakingPool/interfaces/IEdgeStakingPool.sol",
+            "assertionStakingPool/interfaces/IAssertionStakingPoolCreator.sol",
+            "assertionStakingPool/interfaces/IAssertionStakingPool.sol",
+            "assertionStakingPool/interfaces/IAbsBoldStakingPool.sol"
+            
+
+        ]
     }
     
     

@@ -129,7 +129,7 @@ if __name__ == '__main__':
         # project_id = 'whalefall'
         # project_id = 'od-contracts'
         # project_id = 'nextgen'
-        project_id = 'sablier'
+        project_id = 'arbitrum'
         project_path = ''
         project = Project(project_id, projects[project_id])
         
@@ -137,7 +137,7 @@ if __name__ == '__main__':
         # cmd = 'detect_vul' 扫描
         # cmd = 'check_vul_if_positive' 确认
         if cmd == 'detect_vul':
-            # scan_project(project, engine, True) # scan
+            scan_project(project, engine, True) # scan
             content = ''' '''
             rule = ''' '''
             check_function_vul(content, engine, True) # confirm

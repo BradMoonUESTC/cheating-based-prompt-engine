@@ -47,7 +47,10 @@ class ProjectTaskMgr(object):
 
     def _get_task_list(self, session):
         return list(session.query(Project_Task).filter_by(project_id=self.project_id).all())
-
+    def get_task_list_by_id(self, id):
+        return self._operate_in_session(self._get_task_list_by_id, id)
+    def _get_task_list_by_id(self, session, id):
+        return list(session.query(Project_Task).filter_by(project_id=id).all())
     def update_result(self, id, result, result_CN):
         self._operate_in_session(self._update_result, id, result, result_CN)
 

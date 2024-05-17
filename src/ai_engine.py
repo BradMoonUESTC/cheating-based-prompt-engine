@@ -26,6 +26,7 @@ class AiEngine(object):
         # for task in self.planning.do_planning():
         #     self.project_taskmgr.add_tasks(task)    
     def ask_openai_common(self,prompt):
+        api_base = os.getenv('OPENAI_API_BASE', 'api.openai.com')  # Replace with your actual OpenAI API base URL
         api_key = os.getenv('OPENAI_API_KEY')  # Replace with your actual OpenAI API key
         headers = {
             "Content-Type": "application/json",
@@ -40,8 +41,11 @@ class AiEngine(object):
                 }
             ]
         }
-        response = requests.post('https://api.openai.com/v1/chat/completions', headers=headers, json=data)
-        response_josn = response.json()
+        response = requests.post(f'https://{api_base}/v1/chat/completions', headers=headers, json=data)
+        try:
+            response_josn = response.json()
+        except Exception as e:
+            return ''
         if 'choices' not in response_josn:
             return ''
         return response_josn['choices'][0]['message']['content']

@@ -35,6 +35,7 @@ class PlanningV2(object):
         {prompt}
 
         """
+        api_base= os.getenv('OPENAI_API_BASE', 'api.openai.com')  # Replace with your actual OpenAI API base URL
         api_key = os.getenv('OPENAI_API_KEY')  # Replace with your actual OpenAI API key
         headers = {
             "Content-Type": "application/json",
@@ -54,7 +55,7 @@ class PlanningV2(object):
                 }
             ]
         }
-        response = requests.post('https://api.openai.com/v1/chat/completions', headers=headers, json=data)
+        response = requests.post(f'https://{api_base}/v1/chat/completions', headers=headers, json=data)
         response_josn = response.json()
         if 'choices' not in response_josn:
             return ''
@@ -325,8 +326,9 @@ class PlanningV2(object):
         print("Begin do planning...")
         switch_function_code=eval(os.getenv('SWITCH_FUNCTION_CODE','False'))
         switch_business_code=eval(os.getenv('SWITCH_BUSINESS_CODE','True'))
-        
-
+        tasks = self.taskmgr.get_task_list_by_id(self.project.project_id)
+        if len(tasks) > 0:
+            return 
         if switch_business_code:
             all_business_flow,all_business_flow_line,all_business_flow_context=self.get_all_business_flow(self.project.functions_to_check)                    
 
