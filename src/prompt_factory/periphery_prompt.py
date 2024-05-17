@@ -46,7 +46,6 @@ class PeripheryPrompt:
             g. A smart contract is unable to operate due to lack of token funds.
             h. Block stuffing for profit.
             i. Griefing (an attacker causing damage to the users or the protocol without any profit motive).
-            j. Theft of gas.
-            k. Unbounded gas consumption.
-            l. A contract failing to deliver promised returns, but not losing value.        
+            j. A contract failing to deliver promised returns, but not losing value. 
+                   
         """
