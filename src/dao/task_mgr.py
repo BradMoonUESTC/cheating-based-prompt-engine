@@ -51,11 +51,11 @@ class ProjectTaskMgr(object):
         return self._operate_in_session(self._get_task_list_by_id, id)
     def _get_task_list_by_id(self, session, id):
         return list(session.query(Project_Task).filter_by(project_id=id).all())
-    def update_result(self, id, result, result_CN):
-        self._operate_in_session(self._update_result, id, result, result_CN)
+    def update_result(self, id, result, result_CN,result_assumation):
+        self._operate_in_session(self._update_result, id, result, result_CN,result_assumation)
 
-    def _update_result(self, session, id, result, result_CN):
-        session.query(Project_Task).filter_by(id=id).update({Project_Task.result: result, Project_Task.result_gpt4: result_CN})
+    def _update_result(self, session, id, result, result_CN,result_assumation):
+        session.query(Project_Task).filter_by(id=id).update({Project_Task.result: result, Project_Task.result_gpt4: result_CN,Project_Task.category:result_assumation})
         session.commit()
     def update_similarity_generated_referenced_score(self, id, similarity_with_rule):
         self._operate_in_session(self._update_similarity_generated_referenced_score, id, similarity_with_rule)

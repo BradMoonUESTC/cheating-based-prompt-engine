@@ -6,6 +6,10 @@
 1. Add support for cross-contract vulnerability confirmation, reduce the false positive rate approximately 50%.
 2. upadte the structure of the db
 3. add CN explaination
+
+2024.05.18:
+1. Add prompt for check if result of vulnerability has assumations, reduce the false positive rate approximately 20%.
+
 # TODO
 1. Optimize code structure
 2. Add more language support

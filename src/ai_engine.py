@@ -11,7 +11,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from tqdm import tqdm
 
 from prompt_factory.prompt_assembler import PromptAssembler
-
+from prompt_factory.core_prompt import CorePrompt
 class AiEngine(object):
 
     def __init__(self, llm, planning, taskmgr):
@@ -137,9 +137,10 @@ class AiEngine(object):
             prompt_CN=response_final+"用中文解释一下这个漏洞"
             response_final_CN=str(self.ask_openai_common(prompt_CN))
 
-
-
-            self.project_taskmgr.update_result(task.id, response_final, response_final_CN)
+            # 结果打标记，标记处那些会进行假设的vul，通常他们都不是vul
+            prompt_filter_with_assumation=business_flow_code+"\n"+result+"\n\n"+CorePrompt.assumation_prompt()
+            response_if_assumation=str(self.ask_openai_common(prompt_filter_with_assumation))
+            self.project_taskmgr.update_result(task.id, response_final, response_final_CN,response_if_assumation)
             endtime=time.time()
             print("time cost of one task:",endtime-starttime)
         
