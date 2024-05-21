@@ -91,7 +91,7 @@ CREATE TABLE "public"."project_tasks_amazing_prompt" (
   "recommendation" varchar COLLATE "pg_catalog"."default",
   "title" varchar COLLATE "pg_catalog"."default",
   "business_flow_code" varchar COLLATE "pg_catalog"."default",
-  "business_flow_lines" varchar COLLATE "pg_catalog"."default",\
+  "business_flow_lines" varchar COLLATE "pg_catalog"."default",
   "business_flow_context" varchar COLLATE "pg_catalog"."default",
   "if_business_flow_scan" varchar COLLATE "pg_catalog"."default"
 )
