@@ -1,0 +1,29 @@
+name: checkrules
+
+on:
+  push:
+    branches:
+      - certora
+  pull_request:
+
+jobs:
+  checkrules:
+    name: Run Certora prover on all configs
+    runs-on: ubuntu-latest
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: setup cvt
+        run: |
+          pip install certora-cli==7.6.3
+          echo "`pwd`/.github/executables" >> $GITHUB_PATH
+
+      - name: run certora prover on conf files
+        run: .github/executables/checkAllSpecs
+        env:
+          CERTORAKEY: ${{ secrets.CERTORAKEY }}

@@ -1,0 +1,73 @@
+name: test
+
+on:
+  push:
+      branches:
+          - master
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+        - uses: actions/checkout@v3
+          with:
+              submodules: recursive
+
+        - name: Install foundry
+          uses: foundry-rs/foundry-toolchain@v1
+          with:
+              version: nightly
+
+        - name: Run foundry build
+          run: |
+              forge --version
+              forge build
+          id: build
+
+  lint-check:
+      runs-on: ubuntu-latest
+      needs: build
+      steps:
+          - uses: actions/checkout@v3
+            with:
+                submodules: recursive
+          - uses: foundry-rs/foundry-toolchain@v1
+            with:
+                version: nightly
+
+          - name: Run foundry fmt check
+            run: |
+                forge fmt --check
+            id: fmt
+
+  test:
+      runs-on: ubuntu-latest
+      needs: lint-check
+      steps:
+          - uses: actions/checkout@v3
+            with:
+                submodules: recursive
+          - uses: foundry-rs/foundry-toolchain@v1
+            with:
+                version: nightly
+          - name: Run foundry tests
+            # --ast tests enables inline configs to work https://github.com/foundry-rs/foundry/issues/7310#issuecomment-1978088200
+            run: |
+                forge test -vvv --gas-report --ast 
+            id: test
+
+  coverage:
+      runs-on: ubuntu-latest
+      needs: lint-check
+      steps:
+          - uses: actions/checkout@v3
+            with:
+                submodules: recursive
+          - uses: foundry-rs/foundry-toolchain@v1
+            with:
+                version: nightly
+          - name: Run foundry coverage
+            run: |
+                FOUNDRY_PROFILE=coverage forge coverage --report summary
+            id: coverage

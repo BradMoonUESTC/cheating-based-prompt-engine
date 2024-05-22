@@ -1,0 +1,18 @@
+analyze:
+  remappings:
+    - "forge-std/=lib/forge-std/src/"
+    - "openzeppelin/=lib/openzeppelin-contracts/contracts"
+  solc-version: "0.8.20"
+fuzz:
+  ide: foundry
+  enable_cheat_codes: true
+  quick_check: False
+  build_directory: out
+  sources_directory: src
+  project: "EVC"
+  rpc_url: http://127.0.0.1:8545
+  deployed_contract_address: "0x5fbdb2315678afecb367f032d93f642f64180aa3"
+  number_of_cores: 32
+  time_limit: 1hour
+  targets:
+    - "test/evc/EthereumVaultConnectorScribble.sol"

@@ -1,0 +1,8 @@
+ethereum-vault-connector/=lib/ethereum-vault-connector/src/
+permit2/=lib/permit2/
+ds-test/=lib/ethereum-vault-connector/lib/forge-std/lib/ds-test/src/
+erc4626-tests/=lib/openzeppelin-contracts/lib/erc4626-tests/
+forge-gas-snapshot/=lib/permit2/lib/forge-gas-snapshot/src/
+forge-std/=lib/forge-std/src/
+openzeppelin-contracts/=lib/openzeppelin-contracts/contracts/
+solmate/=lib/permit2/lib/solmate/

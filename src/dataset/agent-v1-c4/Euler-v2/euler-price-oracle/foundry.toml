@@ -1,0 +1,27 @@
+[profile.default]
+src = "src"
+out = "out"
+test = "test"
+libs = ["lib"]
+solc = "0.8.23"
+optimizer = true
+optimizer_runs = 100_000
+ffi = false
+
+[profile.coverage]
+optimizer = true
+optimizer_runs = 100_000
+no_match_contract = "Fork"
+
+[fuzz]
+runs = 1_000
+max_test_rejects = 100_000
+seed = "0x2718281828459045235360287471352662497757247093699959574966967627"
+
+[invariant]
+runs = 1_000
+depth = 10
+dictionary_weight = 80
+fail_on_revert = false
+
+# See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options

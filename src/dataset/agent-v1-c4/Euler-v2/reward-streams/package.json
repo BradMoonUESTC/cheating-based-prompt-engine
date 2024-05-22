@@ -1,0 +1,9 @@
+{
+  "name": "euler-rewards",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "Euler Labs",
+  "license": "MIT",
+  "scripts": {},
+  "devDependencies": {}
+}

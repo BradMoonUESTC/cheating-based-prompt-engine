@@ -1,0 +1,89 @@
+{
+	"fuzzing": {
+		"workers": 12,
+		"workerResetLimit": 50,
+		"timeout": 0,
+		"testLimit": 0,
+		"callSequenceLength": 100,
+		"corpusDirectory": "test/invariants/_corpus/medusa",
+		"coverageEnabled": true,
+		"deploymentOrder": [
+			"Tester"
+		],
+		"targetContracts": [
+			"Tester"
+		],
+		"targetContractsBalances": ["0xffffffffffffffffffffffffffffff"],
+		"constructorArgs": {},
+		"deployerAddress": "0x30000",
+		"senderAddresses": [
+			"0x10000",
+			"0x20000",
+			"0x30000"
+		],
+		"blockNumberDelayMax": 60480,
+		"blockTimestampDelayMax": 604800,
+		"blockGasLimit": 12500000000,
+		"transactionGasLimit": 1250000000,
+		"testing": {
+			"stopOnFailedTest": true,
+			"stopOnFailedContractMatching": false,
+			"stopOnNoTests": true,
+			"testAllContracts": false,
+			"traceAll": false,
+			"assertionTesting": {
+				"enabled": true,
+				"testViewMethods": true,
+				"panicCodeConfig": {
+					"failOnCompilerInsertedPanic": false,
+					"failOnAssertion": true,
+					"failOnArithmeticUnderflow": false,
+					"failOnDivideByZero": false,
+					"failOnEnumTypeConversionOutOfBounds": false,
+					"failOnIncorrectStorageAccess": false,
+					"failOnPopEmptyArray": false,
+					"failOnOutOfBoundsArrayAccess": false,
+					"failOnAllocateTooMuchMemory": false,
+					"failOnCallUninitializedVariable": false
+				}
+			},
+			"propertyTesting": {
+				"enabled": true,
+				"testPrefixes": [
+					"fuzz_",
+					"echidna_"
+				]
+			},
+			"optimizationTesting": {
+				"enabled": false,
+				"testPrefixes": [
+					"optimize_"
+				]
+			}
+		},
+		"chainConfig": {
+			"codeSizeCheckDisabled": true,
+			"cheatCodes": {
+				"cheatCodesEnabled": true,
+				"enableFFI": false
+			}
+		}
+	},
+	"compilation": {
+		"platform": "crytic-compile",
+		"platformConfig": {
+			"target": "test/invariants/Tester.t.sol",
+			"solcVersion": "",
+			"exportDirectory": "",
+			"args": [
+				"--solc-remaps",
+				"@crytic/properties/=lib/properties/ forge-std/=lib/forge-std/src/ ds-test/=lib/forge-std/lib/ds-test/src/ evc/=lib/ethereum-vault-connector/src/ solmate/=lib/solmate/src/ openzeppelin/=lib/openzeppelin-contracts/contracts/",
+				"--compile-libraries=(Pretty,0xf01),(Strings,0xf02)"
+			]
+		}
+	},
+	"logging": {
+		"level": "info",
+		"logDirectory": ""
+	}
+}

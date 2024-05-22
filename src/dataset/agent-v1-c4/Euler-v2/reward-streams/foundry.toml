@@ -1,0 +1,30 @@
+[profile.default]
+src = "src"
+out = "out"
+libs = ["lib"]
+solc = "0.8.24"
+optimizer_runs = 100_000
+remappings = [
+    "forge-std/=lib/forge-std/src/",
+    "openzeppelin-contracts/=lib/openzeppelin-contracts/contracts",
+    "evc/=lib/ethereum-vault-connector/src"
+]
+
+[profile.default.fuzz]
+max_test_rejects = 1_000_000
+runs = 1_000
+seed = "0xee1d0f7d9556539a9c0e26aed5e63556"
+
+[profile.default.fmt]
+line_length = 120
+tab_width = 4
+bracket_spacing = false
+int_types = "long"
+multiline_func_header = "params_first"
+quote_style = "double"
+number_underscore = "preserve"
+override_spacing = true
+wrap_comments = true
+ignore = [
+    "src/interfaces/IRewardStreams.sol"
+]

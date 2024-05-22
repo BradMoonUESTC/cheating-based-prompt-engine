@@ -1,0 +1,6 @@
+@solady/=lib/solady/src/
+@uniswap/v3-core/=lib/v3-core/
+@uniswap/v3-periphery/=lib/v3-periphery/
+@redstone/evm-connector/=lib/redstone-oracles-monorepo/packages/evm-connector/contracts/
+@openzeppelin/contracts=lib/openzeppelin-contracts/contracts/
+@pyth/=lib/pyth-sdk-solidity/

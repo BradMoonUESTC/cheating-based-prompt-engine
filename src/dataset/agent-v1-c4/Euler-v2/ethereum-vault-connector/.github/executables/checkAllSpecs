@@ -1,0 +1,98 @@
+#!/usr/bin/env python3
+
+from concurrent.futures import ThreadPoolExecutor
+import glob
+import json
+import os
+import re
+import subprocess
+import sys
+from threading import Lock
+
+outputMutex = Lock()
+
+# Exclude config files that are not verifying from CI
+EXCLUDE_CONFS = [
+    "certora/conf/CER-15-Permit/CER-51-Permit-msg-sender.conf"
+]
+
+def listConfigs() -> list[str]:
+    """List all config files."""
+    subdir_confs = glob.glob('certora/conf/**/*.conf', recursive=True)
+    root_confs = glob.glob('certora/conf/*.conf', recursive=True)
+    confs = subdir_confs + root_confs
+    return [x for x in confs if x not in EXCLUDE_CONFS]
+
+def loadConfigDependencies(filename: str) -> set[str]:
+    """Load all files a config depends on."""
+    try:
+        conf = json.load(open(filename))
+        spec = re.findall('certora/specs/.+\.spec', conf['verify'])
+        return set([filename, *spec, *conf['files']])
+    except:
+        print(f'invalid json in {filename}!')
+        return set()
+
+def listChangedConfigs() -> list[str]:
+    """List config files that have changed w.r.t. the base branch. If we are not
+    within a PR branch, list all config files."""
+    BASEREF = os.environ.get('GITHUB_BASE_REF', '')
+    if BASEREF != '':
+        print('::group::Identifying changed configurations', flush=True)
+        subprocess.run(['git', 'fetch', 'origin', BASEREF])
+        diff = subprocess.run(['git', '-P', 'diff', '--name-only', f'origin/{BASEREF}', 'HEAD'], capture_output=True)
+        changed = set(diff.stdout.decode().splitlines())
+        cfiles = { c: loadConfigDependencies(c) for c in listConfigs() }
+        changed = [ c for c in cfiles if (not cfiles[c]) or (cfiles[c] & changed)]
+        print(f'changed configs: {changed}')
+        print('::endgroup::')
+        return changed
+    else:
+        return listConfigs()
+
+def runConf(filename):
+    """Run the configuration in `filename` and return None if everything worked,
+    or the CompletedProcess when there was some error."""
+    print(f'Starting {filename}')
+    try:
+        # The commit sha fixes the CI at release version 7.0.2
+        # from February 2024.
+        res = subprocess.run(['certoraRun', '--server', 'production', '--wait_for_results', 'all', filename],
+                             capture_output = True)
+    except Exception as e:
+        with outputMutex:
+            print(f'Failed to run {filename}: {e}')
+        return None
+
+    setattr(res, 'filename', filename)
+    with outputMutex:
+        out = res.stdout.decode().strip()
+        m = re.search('https://[a-z-]+\.certora\.com/output/[0-9a-zA-Z?=/]+', out)
+        if m:
+            runurl = m.group(0)
+        else:
+            runurl = 'run not available'
+        print(f'::group::Results for {filename} ({runurl})')
+        if res.stdout != b'':
+            print(out)
+        if res.stderr != b'':
+            print(f'error output:')
+            print(res.stderr.decode().strip())
+        if res.returncode != 0:
+            print(f'Failed with {res.returncode}')
+            print(f'::endgroup::')
+            return res
+        print(f'::endgroup::')
+        return None
+
+with ThreadPoolExecutor(max_workers=10) as executor:
+    results = executor.map(runConf, listChangedConfigs())
+
+failed = [r for r in results if r is not None]
+
+if failed:
+    print('Some jobs failed:')
+    for r in failed:
+        print(f'\t{r.filename}')
+    sys.exit(1)
+sys.exit(0)

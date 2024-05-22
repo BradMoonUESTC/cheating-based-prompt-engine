@@ -1,0 +1,11 @@
+{
+  "name": "euler-price-oracle",
+  "description": "Euler Price Oracles is a library of minimal and immutable oracle adapters. Contracts in this library implement `IPriceOracle`, an opinionated quote-based interface for price oracles. To understand how Price Oracles fit into the [Euler Vault Kit](https://github.com/euler-xyz/euler-vault-kit), read the [EVK whitepaper.](https://docs.euler.finance/euler-vault-kit-white-paper/#price-oracles)",
+  "version": "1.0.0",
+  "keywords": [],
+  "author": "Euler Labs",
+  "license": "GPL-2.0-or-later",
+  "dependencies": {
+    "@redstone-finance/evm-connector": "^0.4.0"
+  }
+}

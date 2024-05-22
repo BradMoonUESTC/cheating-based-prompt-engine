@@ -95,8 +95,9 @@ class AiEngine(object):
                 print("\t to scan")
                 prompt=PromptAssembler.assemble_prompt(code_to_be_tested)
                 response_vul=self.ask_openai_common(prompt)
+                print(response_vul)
                 response_vul = response_vul if response_vul is not None else "no"                
-                self.project_taskmgr.update_result(task.id, response_vul, "")
+                self.project_taskmgr.update_result(task.id, response_vul, "","")
     def do_scan(self, is_gpt4=False, filter_func=None):
         self.llm.init_conversation()
 

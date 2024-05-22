@@ -1,0 +1,11 @@
+{
+    "optimizer": {
+      "enabled": true,
+      "runs": 10000
+    },
+    "remappings": [
+        "forge-std/=lib/forge-std/src/",
+        "openzeppelin/=lib/openzeppelin-contracts/contracts"
+    ]
+  }
+  
