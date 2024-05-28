@@ -259,8 +259,13 @@ class PlanningV2(object):
             for public_external_function_name in all_public_external_function_names:
                 print("***public_external_function_name***:",public_external_function_name)
                 business_flow_list = self.ask_openai_for_business_flow(public_external_function_name, contract_code_without_comments)
+                if len(business_flow_list)==0:
+                    continue
                 # 返回一个list，这个list中包含着多条从public_external_function_name开始的业务流函数名
-                function_lists = self.extract_filtered_functions(business_flow_list)
+                try:
+                    function_lists = self.extract_filtered_functions(business_flow_list)
+                except Exception as e:
+                    print(e)  
                 print("business_flow_list:",function_lists)
                 # 从functions_to_check中提取start_line和end_line行数
                 # 然后将start_line和end_line行数对应的代码提取出来，放入all_business_flow_line
@@ -272,6 +277,8 @@ class PlanningV2(object):
                     return None
                 line_info_list = []
                 for function in function_lists:
+                    if str(function)=="-1":
+                        continue
                     function_name_to_search=contract_name+"."+function
                     function_structure=get_function_structure(functions, function_name_to_search)
                     if function_structure is not None:
@@ -331,7 +338,7 @@ class PlanningV2(object):
             return 
         if switch_business_code:
             all_business_flow,all_business_flow_line,all_business_flow_context=self.get_all_business_flow(self.project.functions_to_check)                    
-
+        
         # Process each function with optimized threshold
         for function in tqdm(self.project.functions_to_check, desc="Finding project rules"):
             

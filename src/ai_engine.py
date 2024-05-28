@@ -122,8 +122,22 @@ class AiEngine(object):
         starttime=time.time()
         result = task.get_result(False)
         result_CN=task.get_result_CN()
+        category_mark=task.get_category()
         if result_CN is not None and len(result_CN) > 0:
-            print("\t skipped (scanned)")
+            if category_mark is not None and len(category_mark)>0:
+                print("\t skipped (scanned)")
+            else:
+                print("\t to mark in assumation")
+                prompt=PromptAssembler.assemble_vul_check_prompt(task.content,result_CN)
+                function_code=task.content
+                if_business_flow_scan = task.if_business_flow_scan
+                business_flow_code = task.business_flow_code
+                business_flow_context=task.business_flow_context
+                # 结果打标记，标记处那些会进行假设的vul，通常他们都不是vul
+                prompt_filter_with_assumation=business_flow_code+"\n"+result+"\n\n"+CorePrompt.assumation_prompt()
+                response_if_assumation=str(self.ask_openai_common(prompt_filter_with_assumation))
+                self.project_taskmgr.update_result(task.id, result, result_CN,response_if_assumation)
+            
         else:
             print("\t to confirm")
             function_code=task.content

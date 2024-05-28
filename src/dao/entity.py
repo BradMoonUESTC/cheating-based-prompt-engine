@@ -118,7 +118,9 @@ class Project_Task(Base):
     def get_result_CN(self):
         result = self.result_gpt4
         return None if result == '' else result
-    
+    def get_category(self):
+        result = self.category
+        return None if result == '' else result
     def get_key(self):
         key = "/".join([self.name, self.content,self.keyword])
         # key = str(random.random())

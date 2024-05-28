@@ -4,7 +4,7 @@ class PeripheryPrompt:
     def role_set_solidity_common():
         return """You are the best solidity auditor in the world"""
     def role_set_rust_common():
-        return """You are the best rust auditor in the world"""
+        return """You are the best rust and rust contract in solana auditor in the world"""
     def role_set_go_common():
         return """You are the best go auditor in the world"""
     
