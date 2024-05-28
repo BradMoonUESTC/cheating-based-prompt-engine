@@ -177,6 +177,16 @@ SWITCH_BUSINESS_CODE=True
 - `SWITCH_FUNCTION_CODE` 和 `SWITCH_BUSINESS_CODE` 为扫描时的粒度，支持函数粒度和业务流粒度。
 
 6. 配置完成后，运行 `main.py` 即可开始扫描过程。
+
+1. 扫描时可能会因为网络原因或api原因中断，对于此已经整理成随时保存，不修改project_id的情况下可以重新运行main.py，可以继续扫描
+2. 一般扫描时间为2-3小时，取决于项目大小和随机次数，中型项目+10次随机大约2个半小时
+3. 中型项目+10次随机大约需要20-30美金成本
+4. 当前还是有误报，按项目大小，大约30-65%，小项目误报会少一些，且还有很多自定义的东西，后续会继续优化
+5. 结果做了很多标记和中文解释
+  1. 优先看result列中有【"result":"yes"】的（有时候是"result": "yes"，带个空格）
+  2. category列优先筛选出【dont need In-project other contract】 的
+  3. 具体的代码看business_flow_code列
+  4. 代码位置看name列
 # 注意
 1. gpt4效果会更好，gpt3尚未深入尝试
 2. 这个tricky prompt理论上经过轻微变种，可以有效的扫描任何语言，但是尽量需要antlr相应语言的ast解析做支持，因为如果有code slicing，效果会更好
