@@ -4,3 +4,4 @@ src/*.pyc
 src/.env
 .DS_Store
 src/__pycache__/ai_engine.cpython-312.pyc
+src/dataset/*
