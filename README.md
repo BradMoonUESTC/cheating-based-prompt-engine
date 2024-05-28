@@ -22,7 +22,7 @@
 <img width="1258" alt="image" src="https://github.com/BradMoonUESTC/trickPrompt-engine/assets/63706549/b3812927-2aa9-47bf-a848-753c2fe05d98">
 
 
-Audit bounty results: As of May 2024, this tool has received $50,000+
+Audit bounty results: As of May 2024, this tool has received $60,000+
 
 
 ------
@@ -177,10 +177,11 @@ SWITCH_BUSINESS_CODE=True
 6. 配置完成后，运行 `main.py` 即可开始扫描过程。
 
 1. 扫描时可能会因为网络原因或api原因中断，对于此已经整理成随时保存，不修改project_id的情况下可以重新运行main.py，可以继续扫描
-2. 一般扫描时间为2-3小时，取决于项目大小和随机次数，中型项目+10次随机大约2个半小时
-3. 中型项目+10次随机大约需要20-30美金成本
-4. 当前还是有误报，按项目大小，大约30-65%，小项目误报会少一些，且还有很多自定义的东西，后续会继续优化
-5. 结果做了很多标记和中文解释
+2. 唯一建议gpt4-turbo，不要用3.5，不要用4o，4o和3.5的推理能力是一样的，拉的一批
+3. 一般扫描时间为2-3小时，取决于项目大小和随机次数，中型项目+10次随机大约2个半小时
+4. 中型项目+10次随机大约需要20-30美金成本
+5. 当前还是有误报，按项目大小，大约30-65%，小项目误报会少一些，且还有很多自定义的东西，后续会继续优化
+6. 结果做了很多标记和中文解释
   1. 优先看result列中有【"result":"yes"】的（有时候是"result": "yes"，带个空格）
   2. category列优先筛选出【dont need In-project other contract】 的
   3. 具体的代码看business_flow_code列
