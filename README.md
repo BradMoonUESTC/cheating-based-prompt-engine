@@ -109,10 +109,8 @@ Where:
 
 核心思路：
 - task driven, not question driven
-- prompt driven, not code driven
-- prompt design, not model design
-
-关键一个字在于“骗”
+- 关键一个字在于“骗”
+- 利用幻觉，喜欢幻觉
 ### 注
 - 这是一种充分激发gpt能力的代码理解型的逻辑漏洞挖掘，控制流类型的漏洞检测能力效果差，适用于真正的实际项目
 - 因此，不要拿那些无意义的学术型漏洞来跑测试
