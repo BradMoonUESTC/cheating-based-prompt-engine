@@ -58,7 +58,6 @@ class PlanningV2(object):
         response = requests.post(f'https://{api_base}/v1/chat/completions', headers=headers, json=data)
 
         response_josn = response.json()
-        print(response_josn)
         if 'choices' not in response_josn:
             return ''
         return response_josn['choices'][0]['message']['content']
@@ -215,6 +214,7 @@ class PlanningV2(object):
 
         return contexts
 
+
     def get_all_business_flow(self,functions_to_check):
         """
         Extracts all business flows for a list of functions.
@@ -233,6 +233,7 @@ class PlanningV2(object):
         all_business_flow_line={}
         all_business_flow_context = {}
         print("grouped contract count:",len(grouped_functions))
+        
         for contract_info in grouped_functions:
             print("———————————————————————processing contract_info:",contract_info['contract_name'],"—————————————————————————")
             contract_name = contract_info['contract_name']
@@ -249,6 +250,10 @@ class PlanningV2(object):
                     function['name'].split(".")[1] for function in functions
                     # if function['visibility']=='public' #有些private函数也可能是业务流的起点，还是扫一下
                 ]
+            elif "_python" in str(contract_name) or contract_name is None:
+                all_public_external_function_names = [
+                    function['name'].split(".")[1] for function in functions
+                ]
             else:
                 all_public_external_function_names = [
                     function['name'].split(".")[1] for function in functions
@@ -260,7 +265,12 @@ class PlanningV2(object):
             print("-----------------asking openai for business flow-----------------")
             for public_external_function_name in all_public_external_function_names:
                 print("***public_external_function_name***:",public_external_function_name)
-                business_flow_list = self.ask_openai_for_business_flow(public_external_function_name, contract_code_without_comments)
+                if "_python" in str(contract_name) and len(all_public_external_function_names)==1:
+                    key = all_public_external_function_names[0]
+                    data = {key: all_public_external_function_names}
+                    business_flow_list = json.dumps(data)
+                else:
+                    business_flow_list = self.ask_openai_for_business_flow(public_external_function_name, contract_code_without_comments)
                 if len(business_flow_list)==0:
                     continue
                 # 返回一个list，这个list中包含着多条从public_external_function_name开始的业务流函数名

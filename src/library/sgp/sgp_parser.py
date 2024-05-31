@@ -174,6 +174,75 @@ def find_rust_functions(text, filename,hash):
                 break
 
     return functions
+import re
+
+def find_python_functions(text, filename, hash_value):
+    # 更新后的正则表达式，使返回类型部分可选
+    regex = r"def\s+(\w+)\s*\((.*?)\)(?:\s*->\s*(\w+))?\s*:"
+    matches = re.finditer(regex, text)
+
+    # 函数列表
+    functions = []
+
+    # 将文本分割成行，用于更容易地计算行号
+    lines = text.split('\n')
+    line_starts = {i: sum(len(line) + 1 for line in lines[:i]) for i in range(len(lines))}
+
+    # 遍历匹配，创建函数定义
+    if any(matches):  # 如果有匹配的函数定义
+        for match in matches:
+            start_line_number = next(i for i, pos in line_starts.items() if pos > match.start()) - 1
+            indent_level = len(lines[start_line_number]) - len(lines[start_line_number].lstrip(' '))
+
+            # 查找函数体的结束
+            for i in range(start_line_number + 1, len(lines)):
+                if len(lines[i]) - len(lines[i].lstrip(' ')) <= indent_level:
+                    end_line_number = i - 1
+                    break
+            else:
+                end_line_number = len(lines) - 1
+
+            # 构建函数体
+            function_body = '\n'.join(lines[start_line_number:end_line_number+1])
+            function_body_lines = function_body.count('\n') + 1
+
+            functions.append({
+                'type': 'FunctionDefinition',
+                'name': "function"+match.group(1),  # 函数名
+                'start_line': start_line_number + 1,
+                'end_line': end_line_number + 1,
+                'offset_start': 0,
+                'offset_end': 0,
+                'content': function_body,
+                'contract_name': filename.replace('.py', '_python' + str(hash_value)),
+                'contract_code': text.strip(),  # 整个代码
+                'modifiers': [],
+                'stateMutability': None,
+                'returnParameters': None,
+                'visibility': 'public',
+                'node_count': function_body_lines
+            })
+    else:  # 如果没有找到函数定义
+        function_body_lines = len(lines)
+        functions.append({
+            'type': 'FunctionDefinition',
+            'name': "function"+filename.split('.')[0]+"all",  # 使用文件名作为函数名
+            'start_line': 1,
+            'end_line': function_body_lines,
+            'offset_start': 0,
+            'offset_end': 0,
+            'content': text.strip(),
+            'contract_name': filename.replace('.py', '_python' + str(hash_value)),
+            'contract_code': text.strip(),
+            'modifiers': [],
+            'stateMutability': None,
+            'returnParameters': None,
+            'visibility': 'public',
+            'node_count': function_body_lines
+        })
+
+    return functions
+
 
 def get_antlr_parsing(path):
     with open(path, 'r', encoding='utf-8', errors="ignore") as file:
@@ -183,6 +252,9 @@ def get_antlr_parsing(path):
     if ".rs" in str(path):
         rust_functions = find_rust_functions(code, filename,hash_value)
         return rust_functions
+    if ".py" in str(path):
+        python_functions = find_python_functions(code, filename,hash_value)
+        return python_functions
     else:
         input_stream = ANTLRInputStream(code)
         lexer = SolidityLexer(input_stream)

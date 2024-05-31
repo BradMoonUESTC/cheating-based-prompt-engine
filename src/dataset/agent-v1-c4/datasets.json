@@ -105,8 +105,13 @@
 
         "functions":[]
     },
-    "zkdex-periphery":{
-        "path":"zkdex-periphery",
+    "zkdexall2":{
+        "path":"zkdexall",
+        "files":[],
+        "functions":[]
+    },
+    "domichain-ainode":{
+        "path":"domichain-ainode",
         "files":[],
         "functions":[]
     }
