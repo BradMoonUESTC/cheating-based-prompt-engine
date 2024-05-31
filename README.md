@@ -10,6 +10,8 @@
 2024.05.18:
 1. Add prompt for check if result of vulnerability has assumations, reduce the false positive rate approximately 20%.
 
+2024.06.01:
+1. Add support for python language, dont ask me why, so annoying.
 # TODO
 1. Optimize code structure
 2. Add more language support
