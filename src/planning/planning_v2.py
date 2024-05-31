@@ -56,7 +56,9 @@ class PlanningV2(object):
             ]
         }
         response = requests.post(f'https://{api_base}/v1/chat/completions', headers=headers, json=data)
+
         response_josn = response.json()
+        print(response_josn)
         if 'choices' not in response_josn:
             return ''
         return response_josn['choices'][0]['message']['content']
