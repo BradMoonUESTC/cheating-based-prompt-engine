@@ -18,6 +18,8 @@ class PlanningV2(object):
         self.llm = llm
         self.project = project
         self.taskmgr=taskmgr
+        self.scan_list_for_larget_context=[]
+
 
     def ask_openai_for_business_flow(self,function_name,contract_code_without_comment):
         prompt=f"""
@@ -261,6 +263,8 @@ class PlanningV2(object):
                     # and not check_function_if_view_or_pure(function['content'])
                 ]
             print("all_public_external_function_names count:",len(all_public_external_function_names))
+            if len(self.scan_list_for_larget_context)>0 and contract_name not in self.scan_list_for_larget_context:
+                continue
             # 有了函数名列表，有了contract_code_without_comments，可以进行业务流的GPT提问了
             print("-----------------asking openai for business flow-----------------")
             for public_external_function_name in all_public_external_function_names:
@@ -359,6 +363,8 @@ class PlanningV2(object):
             content = function['content']
             contract_code=function['contract_code']
             contract_name=function['contract_name']
+            # if len(self.scan_list_for_larget_context)>0 and contract_name not in self.scan_list_for_larget_context:
+            #     continue
             task_count = 0
             print(f"————————Processing function: {name}————————")
             # business_task_item_id = 

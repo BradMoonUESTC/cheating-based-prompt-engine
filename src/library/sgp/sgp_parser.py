@@ -192,15 +192,16 @@ def find_python_functions(text, filename, hash_value):
     if any(matches):  # 如果有匹配的函数定义
         for match in matches:
             start_line_number = next(i for i, pos in line_starts.items() if pos > match.start()) - 1
-            indent_level = len(lines[start_line_number]) - len(lines[start_line_number].lstrip(' '))
+            indent_level = len(lines[start_line_number]) - len(lines[start_line_number].lstrip())
 
             # 查找函数体的结束
-            for i in range(start_line_number + 1, len(lines)):
-                if len(lines[i]) - len(lines[i].lstrip(' ')) <= indent_level:
-                    end_line_number = i - 1
+            end_line_number = start_line_number + 1
+            while end_line_number < len(lines):
+                line = lines[end_line_number]
+                if line.strip() and (len(line) - len(line.lstrip()) <= indent_level):
                     break
-            else:
-                end_line_number = len(lines) - 1
+                end_line_number += 1
+            end_line_number -= 1  # Adjust to include last valid line of the function
 
             # 构建函数体
             function_body = '\n'.join(lines[start_line_number:end_line_number+1])

@@ -129,7 +129,7 @@ if __name__ == '__main__':
         # project_id = 'whalefall'
         # project_id = 'od-contracts'
         # project_id = 'nextgen'
-        project_id = 'domichain-ainode'
+        project_id = 'zkdexall0604'
         project_path = ''
         project = Project(project_id, projects[project_id])
         
@@ -202,5 +202,7 @@ if __name__ == '__main__':
         end_time = time.time()
         print("Total time:", end_time -start_time)
         generate_json(args.o,project.id)
+
+
 
 

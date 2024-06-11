@@ -105,13 +105,18 @@
 
         "functions":[]
     },
-    "zkdexall2":{
+    "zkdexall0604":{
         "path":"zkdexall",
         "files":[],
         "functions":[]
     },
-    "domichain-ainode":{
+    "domichain-ainode3":{
         "path":"domichain-ainode",
+        "files":[],
+        "functions":[]
+    },
+    "domichain-aiproxy":{
+        "path":"domichain-aiproxy",
         "files":[],
         "functions":[]
     }
