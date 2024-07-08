@@ -73,6 +73,7 @@ class PlanningV2(object):
         :return: A list of the processed key followed by its corresponding filtered function names.
         """
         # Load the JSON data into a Python dictionary
+        json_string=json_string.replace("```json",'"')
         data = json.loads(json_string)
 
         # Initialize the result list

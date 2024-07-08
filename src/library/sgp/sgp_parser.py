@@ -175,7 +175,52 @@ def find_rust_functions(text, filename,hash):
 
     return functions
 import re
+def find_go_functions(text, filename, hash):
+    regex = r"func\s+.*\{"
+    matches = re.finditer(regex, text)
 
+    functions = []
+    lines = text.split('\n')
+    line_starts = {i: sum(len(line) + 1 for line in lines[:i]) for i in range(len(lines))}
+
+    for match in matches:
+        function_body_start = match.start()
+        start_line_number = next(i for i, pos in line_starts.items() if pos > function_body_start) - 1
+        
+        # Find the end of the function body
+        brace_count = 1
+        function_body_end = function_body_start
+        for i in range(match.end(), len(text)):
+            if text[i] == '{':
+                brace_count += 1
+            elif text[i] == '}':
+                brace_count -= 1
+                if brace_count == 0:
+                    function_body_end = i + 1
+                    break
+
+        end_line_number = next(i for i, pos in line_starts.items() if pos > function_body_end) - 1
+        function_body = text[function_body_start:function_body_end]
+        function_body_lines = function_body.count('\n') + 1
+
+        functions.append({
+            'type': 'FunctionDefinition',
+            'name': 'special_func',
+            'start_line': start_line_number + 1,
+            'end_line': end_line_number,
+            'offset_start': 0,
+            'offset_end': 0,
+            'content': function_body,
+            'contract_name': filename.replace('.go', '_go' + str(hash)),
+            'contract_code': text,
+            'modifiers': [],
+            'stateMutability': None,
+            'returnParameters': None,
+            'visibility': 'public',
+            'node_count': function_body_lines
+        })
+
+    return functions
 def find_python_functions(text, filename, hash_value):
     # 更新后的正则表达式，使返回类型部分可选
     regex = r"def\s+(\w+)\s*\((.*?)\)(?:\s*->\s*(\w+))?\s*:"

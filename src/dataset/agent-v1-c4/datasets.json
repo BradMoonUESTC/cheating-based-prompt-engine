@@ -105,7 +105,7 @@
 
         "functions":[]
     },
-    "zkdexall0604":{
+    "zkdexall0602":{
         "path":"zkdexall",
         "files":[],
         "functions":[]
@@ -117,6 +117,57 @@
     },
     "domichain-aiproxy":{
         "path":"domichain-aiproxy",
+        "files":[],
+        "functions":[]
+    },
+    "size":{
+        "path":"size",
+        "files":[
+            "Size.sol",
+            "SizeStorage.sol",
+            "SizeView.sol",
+            "SizeViewData.sol",
+            "libraries/AccountingLibrary.sol",
+            "libraries/CapsLibrary.sol",
+            "libraries/DepositTokenLibrary.sol",
+            "libraries/Errors.sol",
+            "libraries/Events.sol",
+            "libraries/LoanLibrary.sol",
+            "libraries/Math.sol",
+            "libraries/Multicall.sol",
+            "libraries/OfferLibrary.sol",
+            "libraries/RiskLibrary.sol",
+            "libraries/YieldCurveLibrary.sol",
+            "libraries/actions/BuyCreditLimit.sol",
+            "libraries/actions/BuyCreditMarket.sol",
+            "libraries/actions/Claim.sol",
+            "libraries/actions/Compensate.sol",
+            "libraries/actions/Deposit.sol",
+            "libraries/actions/Initialize.sol",
+            "libraries/actions/Liquidate.sol",
+            "libraries/actions/LiquidateWithReplacement.sol",
+            "libraries/actions/Repay.sol",
+            "libraries/actions/SelfLiquidate.sol",
+            "libraries/actions/SellCreditLimit.sol",
+            "libraries/actions/SellCreditMarket.sol",
+            "libraries/actions/SetUserConfiguration.sol",
+            "libraries/actions/UpdateConfig.sol",
+            "libraries/actions/Withdraw.sol",
+            "oracle/IPriceFeed.sol",
+            "oracle/PriceFeed.sol",
+            "token/NonTransferrableScaledToken.sol",
+            "token/NonTransferrableToken.sol"
+          ],
+
+        "functions":[]
+    },
+    "CUDIS2":{
+        "path":"CUDIS2",
+        "files":[],
+        "functions":[]
+    },
+    "neox":{
+        "path":"neox",
         "files":[],
         "functions":[]
     }
