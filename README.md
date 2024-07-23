@@ -15,6 +15,10 @@
    
 2024.07.01
 1. Update the license
+
+2024.07.23
+1. Add support for cairo, move
+   
 # TODO
 1. Optimize code structure
 2. Add more language support
