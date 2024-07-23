@@ -49,6 +49,33 @@ class AiEngine(object):
         if 'choices' not in response_josn:
             return ''
         return response_josn['choices'][0]['message']['content']
+    def ask_openai_for_json(self,prompt):
+        api_base = os.getenv('OPENAI_API_BASE', 'api.openai.com')  # Replace with your actual OpenAI API base URL
+        api_key = os.getenv('OPENAI_API_KEY')  # Replace with your actual OpenAI API key
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {api_key}"
+        }
+        data = {
+            "model": os.getenv('VUL_MODEL_ID'),
+            "response_format": { "type": "json_object" },
+            "messages": [
+                {
+                    "role": "system",
+                    "content": "You are a helpful assistant designed to output JSON."
+                },
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ]
+        }
+        response = requests.post(f'https://{api_base}/v1/chat/completions', headers=headers, json=data)
+
+        response_josn = response.json()
+        if 'choices' not in response_josn:
+            return ''
+        return response_josn['choices'][0]['message']['content']
     def calculate_similarity(self,input_text1, input_text2):
         embedding1 = get_embbedding(input_text1)
         embedding2 = get_embbedding(input_text2)
@@ -147,15 +174,34 @@ class AiEngine(object):
             # business_flow_context=''
             # 要进行检查的代码粒度
             code_to_be_tested=business_flow_code+"\n"+business_flow_context if if_business_flow_scan=="1" else function_code
-            prompt=PromptAssembler.assemble_vul_check_prompt(code_to_be_tested,result)
-            response_final=str(self.ask_openai_common(prompt))+"\n"+str(result)
-            prompt_CN=response_final+"用中文解释一下这个漏洞"
-            response_final_CN=str(self.ask_openai_common(prompt_CN))
+            for attempt in range(3):  # 最多尝试3次
+                prompt = PromptAssembler.assemble_vul_check_prompt(code_to_be_tested, result)
+                response_final = str(self.ask_openai_for_json(prompt))
+                print(response_final)
+                def parse_result(json_string):
+                    try:
+                        data = json.loads(json_string)
+                        return data.get("result", None)
+                    except json.JSONDecodeError:
+                        print("Invalid JSON string")
+                        return None
+                
+                result_yes_or_no = parse_result(response_final)
+                
+                if result_yes_or_no is not None and "no" in result_yes_or_no.lower():
+                    print(f"\t confirmed no vulnerability on attempt {attempt + 1}")
+                    break  # 如果包含"no"，结束循环
+                elif attempt == 2:  # 如果是最后一次尝试，3次都是yes
+                    print("\t confirmed potential vulnerability after 5 attempts")
+                else:
+                    print(f"\t potential vulnerability found, attempting confirmation {attempt + 2}")
+            # prompt_CN=response_final+"用中文详细的翻译一下这个漏洞确认结果，不要有任何遗漏，记得给出最后的结论，看看是result-yes还是result-no"
+            # response_final_CN=str(self.ask_openai_common(prompt_CN))
 
             # 结果打标记，标记处那些会进行假设的vul，通常他们都不是vul
-            prompt_filter_with_assumation=business_flow_code+"\n"+result+"\n\n"+CorePrompt.assumation_prompt()
-            response_if_assumation=str(self.ask_openai_common(prompt_filter_with_assumation))
-            self.project_taskmgr.update_result(task.id, response_final, response_final_CN,response_if_assumation)
+            prompt_filter_with_assumation=business_flow_code+"\n"+result+"\n\n"+CorePrompt.category_check()
+            response_if_assumation=str(self.ask_openai_for_json(prompt_filter_with_assumation))
+            self.project_taskmgr.update_result(task.id, result, response_final,response_if_assumation)
             endtime=time.time()
             print("time cost of one task:",endtime-starttime)
         

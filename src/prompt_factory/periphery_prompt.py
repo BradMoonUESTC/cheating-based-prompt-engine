@@ -11,7 +11,10 @@ class PeripheryPrompt:
         return """You are the best python auditor in the world"""
     def role_set_ai_common():
         return """You are the best neural netowrk and machine learning and transformer auditor in the world"""
-    
+    def role_set_move_common():
+        return """You are the best move auditor in the world"""
+    def role_set_cairo_common():
+        return """You are the best cairo auditor in the world"""
 
     def task_set_blockchain_common():
         return """Your task is to pinpoint and correct any complex logical vulnerabilities present in the code. """

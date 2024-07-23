@@ -166,8 +166,45 @@
         "files":[],
         "functions":[]
     },
-    "neox":{
-        "path":"neox",
+    "solana-nft-master3":{
+        "path":"solana-nft-master",
+        "files":[],
+        "functions":[]
+    },
+    "web3-dex-sei":{
+        "path":"web3-dex-sei-main",
+        "files":[],
+        "functions":[]
+    },
+    "web3-dex-solana-main":{
+        "path":"web3-dex-solana-main",
+        "files":[],
+        "functions":[]
+    },
+    "web3-bridge-core-solana-main":{
+        "path":"web3-bridge-core-solana-main",
+        "files":[],
+        "functions":[]
+    },
+    "Web3-Invest-Solana-master2":{
+        "path":"Web3-Invest-Solana-master",
+        "files":[],
+        "functions":[]
+    
+    },
+    "Web3-DEX-SolanaV2-main":{
+        "path":"Web3-DEX-SolanaV2-main",
+        "files":[],
+        "functions":[]
+    
+    },
+    "web3-defi-autostrats-solana":{
+        "path":"web3-defi-autostrats-solana",
+        "files":[],
+        "functions":[]
+    },
+    "web3-bridge-starknet-main":{
+        "path":"web3-bridge-starknet-main",
         "files":[],
         "functions":[]
     }

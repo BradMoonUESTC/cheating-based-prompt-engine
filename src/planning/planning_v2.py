@@ -257,6 +257,14 @@ class PlanningV2(object):
                 all_public_external_function_names = [
                     function['name'].split(".")[1] for function in functions
                 ]
+            elif "_move" in str(contract_name) or contract_name is None:
+                all_public_external_function_names = [
+                    function['name'].split(".")[1] for function in functions if function['visibility']=='public'
+                ]
+            elif "_cairo" in str(contract_name) or contract_name is None:
+                all_public_external_function_names = [
+                    function['name'].split(".")[1] for function in functions if function['visibility']=='public'
+                ]
             else:
                 all_public_external_function_names = [
                     function['name'].split(".")[1] for function in functions
@@ -353,6 +361,12 @@ class PlanningV2(object):
         tasks = self.taskmgr.get_task_list_by_id(self.project.project_id)
         if len(tasks) > 0:
             return 
+        # filter all "test" function
+        for function in self.project.functions_to_check:
+            name=function['name']
+            if "test" in name:
+                self.project.functions_to_check.remove(function)
+
         if switch_business_code:
             all_business_flow,all_business_flow_line,all_business_flow_context=self.get_all_business_flow(self.project.functions_to_check)                    
         

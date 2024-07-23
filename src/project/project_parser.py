@@ -53,7 +53,7 @@ class BaseProjectFilter(object):
 
     def filter_file(self, path, filename):
         # 检查文件后缀
-        if not (filename.endswith(".sol") or filename.endswith(".rs") or filename.endswith(".py")) or filename.endswith(".t.sol"):
+        if not (filename.endswith(".sol") or filename.endswith(".rs") or filename.endswith(".py") or filename.endswith(".move") or filename.endswith(".cairo")) or filename.endswith(".t.sol"):
             return True
 
         # 如果白名单不为空，检查文件是否在白名单中
@@ -93,9 +93,16 @@ class BaseProjectFilter(object):
             return False
         if '_python' in function["name"]:
             return False
+        if '_move' in function["name"]:
+            return False
+        if '_cairo' in function["name"]:
+            return False
         # solidity情况下，进行筛选
         if str(function["contract_name"]).startswith("I") and function["contract_name"][1].isupper():
             print("function ", function['name'], " skipped for interface contract")
+            return True
+        if "test" in str(function["name"]).lower():
+            print("function ", function['name'], " skipped for test function")
             return True
         # if str(function["name"].split('.')[1]) in OPENZEPPELIN_FUNCTIONS:
         #     print("function ", function['name'], " skipped for OZ functions")

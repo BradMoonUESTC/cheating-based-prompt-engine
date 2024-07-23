@@ -105,7 +105,7 @@ def parse(
     return source_unit
 
 def find_rust_functions(text, filename,hash):
-    regex = r"((?:pub\s+)?fn \w+\([^)]*\)(?:\s*->\s*[^{]*)?\s*\{)"
+    regex = r"((?:pub(?:\s*\([^)]*\))?\s+)?fn\s+\w+(?:<[^>]*>)?\s*\([^{]*\)(?:\s*->\s*[^{]*)?\s*\{)"
     matches = re.finditer(regex, text)
 
     # 函数列表
@@ -151,13 +151,15 @@ def find_rust_functions(text, filename,hash):
 
             if inside_braces and brace_count == 0:
                 function_body_end = i + 1
-                end_line_number = next(i for i, pos in line_starts.items() if pos > function_body_end) - 1
+                # Modified part starts here
+                end_line_number = next((i for i, pos in line_starts.items() if pos > function_body_end), len(lines)) - 1
+                # Modified part ends here
                 function_body = text[function_body_start:function_body_end]
                 function_body_lines = function_body.count('\n') + 1
                 visibility = 'public' if 'pub' in match.group(1) else 'private'
                 functions.append({
                     'type': 'FunctionDefinition',
-                    'name': 'special_'+re.search(r'\bfn\s+(\w+)', match.group(1)).group(1),  # Extract function name from match
+                    'name': 'special_'+re.search(r'\bfn\s+(\w+)', match.group(1)).group(1),
                     'start_line': start_line_number + 1,
                     'end_line': end_line_number,
                     'offset_start': 0,
@@ -172,6 +174,84 @@ def find_rust_functions(text, filename,hash):
                     'node_count': function_body_lines
                 })
                 break
+
+    return functions
+def find_move_functions(text, filename, hash):
+    # regex = r"((?:public\s+)?(?:entry\s+)?(?:native\s+)?(?:inline\s+)?fun\s+(?:<[^>]+>\s*)?(\w+)\s*(?:<[^>]+>)?\s*\([^)]*\)(?:\s*:\s*[^{]+)?(?:\s+acquires\s+[^{]+)?\s*\{)"
+    regex = r"((?:public\s+)?(?:entry\s+)?(?:native\s+)?(?:inline\s+)?fun\s+(?:<[^>]+>\s*)?(\w+)\s*(?:<[^>]+>)?\s*\([^)]*\)(?:\s*:\s*[^{]+)?(?:\s+acquires\s+[^{]+)?\s*(?:\{|;))"
+    matches = re.finditer(regex, text)
+
+    functions = []
+    lines = text.split('\n')
+    line_starts = {i: sum(len(line) + 1 for line in lines[:i]) for i in range(len(lines))}
+
+    function_bodies = []
+    for match in matches:
+        if match.group(1).strip().endswith(';'):  # native function
+            function_bodies.append(match.group(1))
+        else:
+            brace_count = 1
+            function_body_start = match.start()
+            inside_braces = True
+
+            for i in range(match.end(), len(text)):
+                if text[i] == '{':
+                    brace_count += 1
+                elif text[i] == '}':
+                    brace_count -= 1
+
+                if inside_braces and brace_count == 0:
+                    function_body_end = i + 1
+                    function_bodies.append(text[function_body_start:function_body_end])
+                    break
+
+    contract_code = "\n".join(function_bodies).strip()
+
+    for match in re.finditer(regex, text):
+        start_line_number = next(i for i, pos in line_starts.items() if pos > match.start()) - 1
+        
+        if match.group(1).strip().endswith(';'):  # native function
+            function_body = match.group(1)
+            end_line_number = start_line_number
+            function_body_lines = 1
+        else:
+            brace_count = 1
+            function_body_start = match.start()
+            inside_braces = True
+
+            for i in range(match.end(), len(text)):
+                if text[i] == '{':
+                    brace_count += 1
+                elif text[i] == '}':
+                    brace_count -= 1
+
+                if inside_braces and brace_count == 0:
+                    function_body_end = i + 1
+                    end_line_number = next(i for i, pos in line_starts.items() if pos > function_body_end) - 1
+                    function_body = text[function_body_start:function_body_end]
+                    function_body_lines = function_body.count('\n') + 1
+                    break
+
+        visibility = 'public' if 'public' in match.group(1) else 'private'
+        is_native = 'native' in match.group(1)
+        
+        functions.append({
+            'type': 'FunctionDefinition',
+            'name':  'special_' + match.group(2),
+            'start_line': start_line_number + 1,
+            'end_line': end_line_number,
+            'offset_start': 0,
+            'offset_end': 0,
+            'content': function_body,
+            'header': match.group(1).strip(),  # 新增：函数头部
+            'contract_name': filename.replace('.move', '_move' + str(hash)),
+            'contract_code': contract_code,
+            'modifiers': ['native'] if is_native else [],
+            'stateMutability': None,
+            'returnParameters': None,
+            'visibility': visibility,
+            'node_count': function_body_lines
+        })
 
     return functions
 import re
@@ -288,7 +368,76 @@ def find_python_functions(text, filename, hash_value):
         })
 
     return functions
+def find_cairo_functions(text, filename,hash):
+    regex = r"((?:pub(?:\s*\([^)]*\))?\s+)?fn\s+\w+(?:<[^>]*>)?\s*\([^{]*\)(?:\s*->\s*[^{]*)?\s*\{)"
+    matches = re.finditer(regex, text)
 
+    # 函数列表
+    functions = []
+
+    # 将文本分割成行，用于更容易地计算行号
+    lines = text.split('\n')
+    line_starts = {i: sum(len(line) + 1 for line in lines[:i]) for i in range(len(lines))}
+
+    # 先收集所有函数体，构建完整的函数代码
+    function_bodies = []
+    for match in matches:
+        brace_count = 1
+        function_body_start = match.start()
+        inside_braces = True
+
+        for i in range(match.end(), len(text)):
+            if text[i] == '{':
+                brace_count += 1
+            elif text[i] == '}':
+                brace_count -= 1
+
+            if inside_braces and brace_count == 0:
+                function_body_end = i + 1
+                function_bodies.append(text[function_body_start:function_body_end])
+                break
+
+    # 完整的函数代码字符串
+    contract_code = "\n".join(function_bodies).strip()
+
+    # 再次遍历匹配，创建函数定义
+    for match in re.finditer(regex, text):
+        start_line_number = next(i for i, pos in line_starts.items() if pos > match.start()) - 1
+        brace_count = 1
+        function_body_start = match.start()
+        inside_braces = True
+
+        for i in range(match.end(), len(text)):
+            if text[i] == '{':
+                brace_count += 1
+            elif text[i] == '}':
+                brace_count -= 1
+
+            if inside_braces and brace_count == 0:
+                function_body_end = i + 1
+                end_line_number = next(i for i, pos in line_starts.items() if pos > function_body_end) - 1
+                function_body = text[function_body_start:function_body_end]
+                function_body_lines = function_body.count('\n') + 1
+                visibility = 'public'
+                functions.append({
+                    'type': 'FunctionDefinition',
+                    'name': 'special_'+re.search(r'\bfn\s+(\w+)', match.group(1)).group(1),  # Extract function name from match
+                    'start_line': start_line_number + 1,
+                    'end_line': end_line_number,
+                    'offset_start': 0,
+                    'offset_end': 0,
+                    'content': function_body,
+                    'contract_name': filename.replace('.cairo','_cairo'+str(hash)),
+                    'contract_code': "",
+                    'modifiers': [],
+                    'stateMutability': None,
+                    'returnParameters': None,
+                    'visibility': visibility,
+                    'node_count': function_body_lines
+                })
+                break
+
+    return functions
 
 def get_antlr_parsing(path):
     with open(path, 'r', encoding='utf-8', errors="ignore") as file:
@@ -301,6 +450,12 @@ def get_antlr_parsing(path):
     if ".py" in str(path):
         python_functions = find_python_functions(code, filename,hash_value)
         return python_functions
+    if ".move" in str(path):
+        move_functions = find_move_functions(code, filename,hash_value)
+        return move_functions
+    if ".cairo" in str(path):
+        cairo_functions = find_cairo_functions(code, filename,hash_value)
+        return cairo_functions
     else:
         input_stream = ANTLRInputStream(code)
         lexer = SolidityLexer(input_stream)
