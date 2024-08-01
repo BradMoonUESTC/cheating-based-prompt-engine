@@ -265,6 +265,10 @@ class PlanningV2(object):
                 all_public_external_function_names = [
                     function['name'].split(".")[1] for function in functions if function['visibility']=='public'
                 ]
+            elif "_tact" in str(contract_name) or contract_name is None:
+                all_public_external_function_names = [
+                    function['name'].split(".")[1] for function in functions if function['visibility']=='public'
+                ]
             else:
                 all_public_external_function_names = [
                     function['name'].split(".")[1] for function in functions
@@ -283,7 +287,10 @@ class PlanningV2(object):
                     data = {key: all_public_external_function_names}
                     business_flow_list = json.dumps(data)
                 else:
-                    business_flow_list = self.ask_openai_for_business_flow(public_external_function_name, contract_code_without_comments)
+                    try:
+                        business_flow_list = self.ask_openai_for_business_flow(public_external_function_name, contract_code_without_comments)
+                    except Exception as e:
+                        business_flow_list=[]
                 if len(business_flow_list)==0:
                     continue
                 # 返回一个list，这个list中包含着多条从public_external_function_name开始的业务流函数名

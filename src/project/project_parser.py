@@ -53,7 +53,7 @@ class BaseProjectFilter(object):
 
     def filter_file(self, path, filename):
         # 检查文件后缀
-        if not (filename.endswith(".sol") or filename.endswith(".rs") or filename.endswith(".py") or filename.endswith(".move") or filename.endswith(".cairo")) or filename.endswith(".t.sol"):
+        if not (filename.endswith(".sol") or filename.endswith(".rs") or filename.endswith(".py") or filename.endswith(".move") or filename.endswith(".cairo") or filename.endswith(".tact")) or filename.endswith(".t.sol"):
             return True
 
         # 如果白名单不为空，检查文件是否在白名单中
@@ -61,11 +61,11 @@ class BaseProjectFilter(object):
             return not any(os.path.basename(filename) in white_file for white_file in self.white_files)
             # return os.path.(filename) not in self.white_files
 
-        # 黑名单规则检查
-        if is_path_in_white_list(path, PATH_PARTIAL_WHITE_LIST, True) \
-                or is_path_in_white_list(path, PATH_WHITE_LIST, False) \
-                or is_path_in_white_list(filename, FILE_PARTIAL_WHITE_LIST, True):
-            return True
+        # # 黑名单规则检查
+        # if is_path_in_white_list(path, PATH_PARTIAL_WHITE_LIST, True) \
+        #         or is_path_in_white_list(path, PATH_WHITE_LIST, False) \
+        #         or is_path_in_white_list(filename, FILE_PARTIAL_WHITE_LIST, True):
+        #     return True
 
         # 如果白名单不为空，检查文件是否在白名单中
         if len(self.white_files) > 0:
@@ -96,6 +96,8 @@ class BaseProjectFilter(object):
         if '_move' in function["name"]:
             return False
         if '_cairo' in function["name"]:
+            return False
+        if '_tact' in function["name"]:
             return False
         # solidity情况下，进行筛选
         if str(function["contract_name"]).startswith("I") and function["contract_name"][1].isupper():

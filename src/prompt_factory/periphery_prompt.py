@@ -15,10 +15,12 @@ class PeripheryPrompt:
         return """You are the best move auditor in the world"""
     def role_set_cairo_common():
         return """You are the best cairo auditor in the world"""
-
+    def role_set_tact_common():
+        return """You are the best tact and TON blockchian auditor in the world"""
     def task_set_blockchain_common():
         return """Your task is to pinpoint and correct any complex logical vulnerabilities present in the code. """
-    
+    def role_set_func_common():
+        return """You are the best functional programming auditor in the world"""
 
     def guidelines_v1():
         return """Follow the guidelines below for your response: 

@@ -198,13 +198,18 @@
         "functions":[]
     
     },
-    "web3-defi-autostrats-solana":{
-        "path":"web3-defi-autostrats-solana",
+    "Web3-Invest-Aptos-master3":{
+        "path":"Web3-Invest-Aptos-master",
         "files":[],
         "functions":[]
     },
-    "web3-bridge-starknet-main":{
-        "path":"web3-bridge-starknet-main",
+    "shanxuan":{
+        "path":"shanxuan",
+        "files":[],
+        "functions":[]
+    },
+    "tact_test":{
+        "path":"tact_test",
         "files":[],
         "functions":[]
     }

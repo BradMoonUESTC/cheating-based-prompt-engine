@@ -111,7 +111,6 @@ class AiEngine(object):
         
         # 要进行检测的代码粒度
         code_to_be_tested=business_flow_code if if_business_flow_scan=="1" else function_code
-
         if result is not None and len(result) > 0 and str(result).strip() != "NOT A VUL IN RES no":
             print("\t skipped (scanned)")
         else:

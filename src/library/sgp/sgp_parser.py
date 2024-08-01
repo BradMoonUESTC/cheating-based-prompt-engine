@@ -103,6 +103,92 @@ def parse(
             )
             f.write(s)
     return source_unit
+def find_tact_functions(text, filename, hash):
+    regex = r"((?:init|receive|fun\s+\w+)\s*\([^)]*\)(?:\s*:\s*\w+)?\s*\{)"
+    matches = re.finditer(regex, text)
+
+    functions = []
+    lines = text.split('\n')
+    line_starts = {i: sum(len(line) + 1 for line in lines[:i]) for i in range(len(lines))}
+
+    # 先收集所有函数体，构建完整的函数代码
+    function_bodies = []
+    for match in matches:
+        brace_count = 1
+        function_body_start = match.start()
+        inside_braces = True
+
+        for i in range(match.end(), len(text)):
+            if text[i] == '{':
+                brace_count += 1
+            elif text[i] == '}':
+                brace_count -= 1
+
+            if inside_braces and brace_count == 0:
+                function_body_end = i + 1
+                function_bodies.append(text[function_body_start:function_body_end])
+                break
+
+    # 完整的函数代码字符串
+    contract_code = "\n".join(function_bodies).strip()
+
+    # 再次遍历匹配，创建函数定义
+    for match in re.finditer(regex, text):
+        start_line_number = next(i for i, pos in line_starts.items() if pos > match.start()) - 1
+        function_header = match.group(1)
+        
+        brace_count = 1
+        function_body_start = match.start()
+        inside_braces = True
+
+        for i in range(match.end(), len(text)):
+            if text[i] == '{':
+                brace_count += 1
+            elif text[i] == '}':
+                brace_count -= 1
+
+            if inside_braces and brace_count == 0:
+                function_body_end = i + 1
+                end_line_number = next(i for i, pos in line_starts.items() if pos > function_body_end) - 1
+                function_body = text[function_body_start:function_body_end]
+                function_body_lines = function_body.count('\n') + 1
+                break
+
+        # Extract function name and handle init and receive separately
+        if function_header.startswith('init'):
+            func_name = 'init'
+            modifier = 'init'
+        elif function_header.startswith('receive'):
+            func_name = 'receive'
+            modifier = 'receive'
+        else:
+            func_name = re.search(r'fun\s+(\w+)', function_header).group(1)
+            modifier = 'fun'
+        
+        # Extract return type if present
+        return_type = None
+        if ':' in function_header:
+            return_type = re.search(r':\s*(\w+)', function_header).group(1)
+        if func_name=="receive":
+            func_name=func_name+"_"+str(start_line_number)
+        functions.append({
+            'type': 'FunctionDefinition',
+            'name': "special_"+func_name,
+            'start_line': start_line_number + 1,
+            'end_line': end_line_number,
+            'offset_start': 0,
+            'offset_end': 0,
+            'content': function_body,
+            'contract_name': filename.replace('.tact', '_tact' + str(hash)),
+            'contract_code': contract_code,
+            'modifiers': [modifier],
+            'stateMutability': None,
+            'returnParameters': return_type,
+            'visibility': 'public',  # Assuming all functions are public in FunC
+            'node_count': function_body_lines
+        })
+
+    return functions
 
 def find_rust_functions(text, filename,hash):
     regex = r"((?:pub(?:\s*\([^)]*\))?\s+)?fn\s+\w+(?:<[^>]*>)?\s*\([^{]*\)(?:\s*->\s*[^{]*)?\s*\{)"
@@ -456,6 +542,9 @@ def get_antlr_parsing(path):
     if ".cairo" in str(path):
         cairo_functions = find_cairo_functions(code, filename,hash_value)
         return cairo_functions
+    if ".tact" in str(path):
+        tact_functions = find_tact_functions(code, filename,hash_value)
+        return tact_functions
     else:
         input_stream = ANTLRInputStream(code)
         lexer = SolidityLexer(input_stream)
