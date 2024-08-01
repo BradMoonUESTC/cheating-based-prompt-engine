@@ -18,6 +18,9 @@
 
 2024.07.23
 1. Add support for cairo, move
+
+2024.08.01
+1. Add support for func, tact
    
 # TODO
 1. Optimize code structure
