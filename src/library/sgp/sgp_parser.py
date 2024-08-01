@@ -189,7 +189,170 @@ def find_tact_functions(text, filename, hash):
         })
 
     return functions
+def find_func_functions(text, filename, hash):
+    regex = r"((?:\w+|\(\))\s+\w+\s*\([^)]*\)(?:\s+\w+)*\s*\{)"
+    matches = re.finditer(regex, text)
 
+    functions = []
+    lines = text.split('\n')
+    line_starts = {i: sum(len(line) + 1 for line in lines[:i]) for i in range(len(lines))}
+
+    # First, collect all function bodies to construct the complete contract code
+    function_bodies = []
+    for match in matches:
+        brace_count = 1
+        function_body_start = match.start()
+        inside_braces = True
+
+        for i in range(match.end(), len(text)):
+            if text[i] == '{':
+                brace_count += 1
+            elif text[i] == '}':
+                brace_count -= 1
+
+            if inside_braces and brace_count == 0:
+                function_body_end = i + 1
+                function_bodies.append(text[function_body_start:function_body_end])
+                break
+
+    # Complete contract code string
+    contract_code = "\n".join(function_bodies).strip()
+
+    # Iterate through matches again to create function definitions
+    for match in re.finditer(regex, text):
+        start_line_number = next(i for i, pos in line_starts.items() if pos > match.start()) - 1
+        function_header = match.group(1)
+        
+        brace_count = 1
+        function_body_start = match.start()
+        inside_braces = True
+
+        for i in range(match.end(), len(text)):
+            if text[i] == '{':
+                brace_count += 1
+            elif text[i] == '}':
+                brace_count -= 1
+
+            if inside_braces and brace_count == 0:
+                function_body_end = i + 1
+                end_line_number = next(i for i, pos in line_starts.items() if pos > function_body_end) - 1
+                function_body = text[function_body_start:function_body_end]
+                function_body_lines = function_body.count('\n') + 1
+                break
+
+        # Extract function name
+        func_name = re.search(r'\s(\w+)\s*\(', function_header).group(1)
+        
+        # Extract initial modifier (if any)
+        initial_modifier = re.search(r'^(\w+|\(\))', function_header).group(1)
+        
+        # Extract additional modifiers after the parentheses
+        additional_modifiers = re.findall(r'\)\s+(\w+)', function_header)
+        
+        all_modifiers = [initial_modifier] if initial_modifier != '()' else []
+        all_modifiers.extend(additional_modifiers)
+        
+        functions.append({
+            'type': 'FunctionDefinition',
+            'name': func_name,
+            'start_line': start_line_number + 1,
+            'end_line': end_line_number,
+            'offset_start': 0,
+            'offset_end': 0,
+            'content': function_body,
+            'contract_name': filename.replace('.fc', '_func' + str(hash)),
+            'contract_code': contract_code,
+            'modifiers': all_modifiers,
+            'stateMutability': None,
+            'returnParameters': None,
+            'visibility': 'public',  # Assuming all functions are public in FunC
+            'node_count': function_body_lines
+        })
+
+    return functions
+
+
+def find_func_functions(text, filename, hash):
+    regex = r"((?:\w+|\(\))\s+\w+\s*\([^)]*\)(?:\s+\w+)*\s*\{)"
+    matches = re.finditer(regex, text)
+
+    functions = []
+    lines = text.split('\n')
+    line_starts = {i: sum(len(line) + 1 for line in lines[:i]) for i in range(len(lines))}
+
+    # First, collect all function bodies to construct the complete contract code
+    function_bodies = []
+    for match in matches:
+        brace_count = 1
+        function_body_start = match.start()
+        inside_braces = True
+
+        for i in range(match.end(), len(text)):
+            if text[i] == '{':
+                brace_count += 1
+            elif text[i] == '}':
+                brace_count -= 1
+
+            if inside_braces and brace_count == 0:
+                function_body_end = i + 1
+                function_bodies.append(text[function_body_start:function_body_end])
+                break
+
+    # Complete contract code string
+    contract_code = "\n".join(function_bodies).strip()
+
+    # Iterate through matches again to create function definitions
+    for match in re.finditer(regex, text):
+        start_line_number = next(i for i, pos in line_starts.items() if pos > match.start()) - 1
+        function_header = match.group(1)
+        
+        brace_count = 1
+        function_body_start = match.start()
+        inside_braces = True
+
+        for i in range(match.end(), len(text)):
+            if text[i] == '{':
+                brace_count += 1
+            elif text[i] == '}':
+                brace_count -= 1
+
+            if inside_braces and brace_count == 0:
+                function_body_end = i + 1
+                end_line_number = next(i for i, pos in line_starts.items() if pos > function_body_end) - 1
+                function_body = text[function_body_start:function_body_end]
+                function_body_lines = function_body.count('\n') + 1
+                break
+
+        # Extract function name
+        func_name = re.search(r'\s(\w+)\s*\(', function_header).group(1)
+        
+        # Extract initial modifier (if any)
+        initial_modifier = re.search(r'^(\w+|\(\))', function_header).group(1)
+        
+        # Extract additional modifiers after the parentheses
+        additional_modifiers = re.findall(r'\)\s+(\w+)', function_header)
+        
+        all_modifiers = [initial_modifier] if initial_modifier != '()' else []
+        all_modifiers.extend(additional_modifiers)
+        
+        functions.append({
+            'type': 'FunctionDefinition',
+            'name': "special_"+func_name,
+            'start_line': start_line_number + 1,
+            'end_line': end_line_number,
+            'offset_start': 0,
+            'offset_end': 0,
+            'content': function_body,
+            'contract_name': filename.replace('.fc', '_func' + str(hash)),
+            'contract_code': contract_code,
+            'modifiers': all_modifiers,
+            'stateMutability': None,
+            'returnParameters': None,
+            'visibility': 'public',  # Assuming all functions are public in FunC
+            'node_count': function_body_lines
+        })
+
+    return functions
 def find_rust_functions(text, filename,hash):
     regex = r"((?:pub(?:\s*\([^)]*\))?\s+)?fn\s+\w+(?:<[^>]*>)?\s*\([^{]*\)(?:\s*->\s*[^{]*)?\s*\{)"
     matches = re.finditer(regex, text)
@@ -545,6 +708,9 @@ def get_antlr_parsing(path):
     if ".tact" in str(path):
         tact_functions = find_tact_functions(code, filename,hash_value)
         return tact_functions
+    if ".fc" in str(path):
+        func_functions = find_func_functions(code, filename,hash_value)
+        return func_functions
     else:
         input_stream = ANTLRInputStream(code)
         lexer = SolidityLexer(input_stream)

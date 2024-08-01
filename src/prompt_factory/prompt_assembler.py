@@ -4,7 +4,7 @@ from prompt_factory.vul_check_prompt import VulCheckPrompt
 class PromptAssembler:
     def assemble_prompt(code):
         ret_prompt=code+"\n"\
-                    +PeripheryPrompt.role_set_tact_common()+"\n"\
+                    +PeripheryPrompt.role_set_func_common()+"\n"\
                     +PeripheryPrompt.task_set_blockchain_common()+"\n"\
                     +CorePrompt.core_prompt()+"\n"\
                     +PeripheryPrompt.guidelines()
