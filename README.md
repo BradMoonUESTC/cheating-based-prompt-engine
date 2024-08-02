@@ -21,7 +21,11 @@
 
 2024.08.01
 1. Add support for func, tact
-   
+
+2024.08.02
+Inspired by the paper https://arxiv.org/abs/2407.21787v1, the project was renamed to finite-money-prompt-engine on August 2, 2024.
+
+
 # TODO
 1. Optimize code structure
 2. Add more language support
