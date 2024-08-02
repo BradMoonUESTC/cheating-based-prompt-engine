@@ -129,7 +129,7 @@ if __name__ == '__main__':
         # project_id = 'whalefall'
         # project_id = 'od-contracts'
         # project_id = 'nextgen'
-        project_id = 'dextonfunc'
+        project_id = 'tact_test3'
         project_path = ''
         project = Project(project_id, projects[project_id])
         

@@ -421,7 +421,7 @@ class PlanningV2(object):
                             absolute_file_path=function['absolute_file_path'],
                             recommendation='',
                             title='',
-                            business_flow_code=business_flow_code,
+                            business_flow_code=str(business_flow_code)+"\n"+str(content),
                             business_flow_lines=line_info_list,
                             business_flow_context=other_contract_context,
                             if_business_flow_scan=1  # Indicating scanned using business flow code
