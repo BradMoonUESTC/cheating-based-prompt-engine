@@ -174,7 +174,7 @@ def parse_project(project_path, project_filter = None):
             if to_scan:
                 results = get_antlr_parsing(sol_file)
                 for result in results:
-                    result['relative_file_path'] = sol_file
+                    result['affected_files'] = sol_file
                     result['absolute_file_path'] = absolute_path
                 all_results.extend(results)
     

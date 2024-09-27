@@ -41,6 +41,7 @@ class PeripheryPrompt:
         5. dont response in "attaker use some way" the exploit method must be clear and useable
         6. Dont consider any corner case or extreme scenario, the vulnerability must be practical and exploitable.
         7. Assume that the attack can not have the role of the owner of the contract
+        8. return the result as markdown format: include # Description and # Recommendation
         Ensure your response is as detailed as possible, and strictly adheres to all the above requirements
         """
     def impact_list():

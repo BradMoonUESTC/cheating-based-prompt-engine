@@ -65,7 +65,7 @@ def generate_json(output_path,project_id):
             continue
         if '"result": "no"' in str(entity.description):
             continue
-        line_info_list = entity.business_flow_lines  # 每个元素是一个(start_line, end_line)元组
+        line_info_list = entity.range  # 每个元素是一个(start_line, end_line)元组
                 # 移除字符串两端的单引号或双引号（如果有的话）
         line_info_str = line_info_list.strip('"\'') 
         line_info_set = ast.literal_eval(line_info_str)
@@ -75,7 +75,7 @@ def generate_json(output_path,project_id):
         affected_files_list = []
         for start_line, end_line in line_info_tuples:
             affected_file = {
-                "filePath": entity.relative_file_path,  # Assuming entity has a relative_file_path attribute
+                "filePath": entity.affected_files,  # Assuming entity has a affected_files attribute
                 "range": {
                     "start": {"line": int(start_line)},
                     "end": {"line": int(end_line)}
@@ -115,7 +115,7 @@ def show_antlr_use():
 
 if __name__ == '__main__':
 
-    switch_production_or_test = 'test' # prod / test
+    switch_production_or_test = 'prod' # prod / test
 
     if switch_production_or_test == 'test':
         start_time=time.time()
@@ -129,7 +129,7 @@ if __name__ == '__main__':
         # project_id = 'whalefall'
         # project_id = 'od-contracts'
         # project_id = 'nextgen'
-        project_id = 'tact_test3'
+        project_id = 'indai'
         project_path = ''
         project = Project(project_id, projects[project_id])
         
@@ -160,8 +160,8 @@ if __name__ == '__main__':
         parser = argparse.ArgumentParser(description='Process input parameters for vulnerability scanning.')
         parser.add_argument('-path', type=str, required=True, help='Combined base path for the dataset and folder')
         parser.add_argument('-id', type=str, required=True, help='Project ID')
-        parser.add_argument('-cmd', type=str, choices=['detect_vul', 'check_vul_if_positive'], required=True, help='Command to execute')
-        parser.add_argument('-o', type=str, required=True, help='Output file path')
+        # parser.add_argument('-cmd', type=str, choices=['detect_vul', 'check_vul_if_positive'], required=True, help='Command to execute')
+        # parser.add_argument('-o', type=str, required=True, help='Output file path')
         # usage:
         # python main.py 
         # --path ../../dataset/agent-v1-c4/Archive 
@@ -184,24 +184,24 @@ if __name__ == '__main__':
         # Load projects
         projects = load_dataset(dataset_base, args.id, folder_name)
         project = Project(args.id, projects[args.id])
-
+        scan_project(project, engine, True)  
         # Execute command
-        if args.cmd == 'detect_vul':
-            scan_project(project, engine, True)  # scan
-            content = ''' '''
-            rule = ''' '''
-            check_function_vul(content, engine, True)  # confirm
-        elif args.cmd == 'check_vul_if_positive':
-            content = ''' '''
-            rule = ''' '''
-            check_function_vul(content, engine, True)  # confirm
+        # if args.cmd == 'detect_vul':
+        #     scan_project(project, engine, True)  # scan
+        #     content = ''' '''
+        #     rule = ''' '''
+        #     # check_function_vul(content, engine, True)  # confirm
+        # elif args.cmd == 'check_vul_if_positive':
+        #     content = ''' '''
+        #     rule = ''' '''
+        #     check_function_vul(content, engine, True)  # confirm
 
-        project_taskmgr = ProjectTaskMgr(project.id, engine)
-        print(project_taskmgr.query_task_by_project_id(project.id))
-        # End time and print total time
-        end_time = time.time()
-        print("Total time:", end_time -start_time)
-        generate_json(args.o,project.id)
+        # project_taskmgr = ProjectTaskMgr(project.id, engine)
+        # print(project_taskmgr.query_task_by_project_id(project.id))
+        # # End time and print total time
+        # end_time = time.time()
+        # print("Total time:", end_time -start_time)
+        # generate_json(args.o,project.id)
 
 
 

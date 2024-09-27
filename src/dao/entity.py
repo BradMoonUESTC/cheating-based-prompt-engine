@@ -35,18 +35,18 @@ class Project_Task(Base):
     description = Column(String)
     start_line=Column(String)
     end_line=Column(String)
-    relative_file_path=Column(String)
+    affected_files=Column(String)
     absolute_file_path=Column(String)
     recommendation=Column(String)
     title=Column(String)
     business_flow_code=Column(String)
-    business_flow_lines=Column(String)
+    range=Column(String)
     business_flow_context=Column(String)
     if_business_flow_scan=Column(String)
 
-    fieldNames = ['name', 'content', 'keyword', 'business_type', 'sub_business_type', 'function_type', 'rule', 'result', 'result_gpt4','score','category','contract_code','risklevel','similarity_with_rule','description','start_line','end_line','relative_file_path','absolute_file_path','recommendation','title','business_flow_code','business_flow_lines','business_flow_context','if_business_flow_scan']
+    fieldNames = ['name', 'content', 'keyword', 'business_type', 'sub_business_type', 'function_type', 'rule', 'result', 'result_gpt4','score','category','contract_code','risklevel','similarity_with_rule','description','start_line','end_line','affected_files','absolute_file_path','recommendation','title','business_flow_code','range','business_flow_context','if_business_flow_scan']
 
-    def __init__(self, project_id, name, content, keyword, business_type, sub_business_type, function_type, rule, result='', result_gpt4='',score='0.00',category='',contract_code='',risklevel='',similarity_with_rule='0.00',description='',start_line='',end_line='',relative_file_path='',absolute_file_path='',recommendation='',title='',business_flow_code='',business_flow_lines='',business_flow_context='',if_business_flow_scan='0'):
+    def __init__(self, project_id, name, content, keyword, business_type, sub_business_type, function_type, rule, result='', result_gpt4='',score='0.00',category='',contract_code='',risklevel='',similarity_with_rule='0.00',description='',start_line='',end_line='',affected_files='',absolute_file_path='',recommendation='',title='',business_flow_code='',range='',business_flow_context='',if_business_flow_scan='0'):
         self.project_id = project_id
         self.name = name
         self.content = content
@@ -66,12 +66,12 @@ class Project_Task(Base):
         self.description = description
         self.start_line=start_line
         self.end_line=end_line
-        self.relative_file_path=relative_file_path
+        self.affected_files=affected_files
         self.absolute_file_path=absolute_file_path
         self.recommendation=recommendation
         self.title=title
         self.business_flow_code=business_flow_code
-        self.business_flow_lines=business_flow_lines
+        self.range=range
         self.business_flow_context=business_flow_context
         self.if_business_flow_scan=if_business_flow_scan
 
@@ -96,12 +96,12 @@ class Project_Task(Base):
             'description': self.description,
             'start_line':self.start_line,
             'end_line':self.end_line,
-            'relative_file_path':self.relative_file_path,
+            'affected_files':self.affected_files,
             'absolute_file_path':self.absolute_file_path,
             'recommendation':self.recommendation,
             'title':self.title,
             'business_flow_code':self.business_flow_code,
-            'business_flow_lines':self.business_flow_lines,
+            'range':self.range,
             'business_flow_context':self.business_flow_context,
             'if_business_flow_scan':self.if_business_flow_scan
         }

@@ -4,7 +4,7 @@ from prompt_factory.vul_check_prompt import VulCheckPrompt
 class PromptAssembler:
     def assemble_prompt(code):
         ret_prompt=code+"\n"\
-                    +PeripheryPrompt.role_set_func_common()+"\n"\
+                    +PeripheryPrompt.role_set_solidity_common()+"\n"\
                     +PeripheryPrompt.task_set_blockchain_common()+"\n"\
                     +CorePrompt.core_prompt()+"\n"\
                     +PeripheryPrompt.guidelines()
@@ -15,4 +15,8 @@ class PromptAssembler:
         ret_prompt=code+"\n"\
                 +str(vul)+"\n"\
                 +VulCheckPrompt.vul_check_prompt_old()+"\n"
+        return ret_prompt  
+    def assemble_prompt_ask_title(response_vul):
+        ret_prompt=response_vul+"\n"\
+                +"here is the description and recommendation, please give a title for this vulnerability"
         return ret_prompt  
