@@ -14,17 +14,13 @@ from prompt_factory.prompt_assembler import PromptAssembler
 from prompt_factory.core_prompt import CorePrompt
 class AiEngine(object):
 
-    def __init__(self, llm, planning, taskmgr):
+    def __init__(self, planning, taskmgr):
         # Step 1: 获取results
-        self.llm = llm
         self.planning = planning
         self.project_taskmgr = taskmgr
 
     def do_planning(self):
         self.planning.do_planning()
-        # self.project_taskmgr.add_tasks(tasks)
-        # for task in self.planning.do_planning():
-        #     self.project_taskmgr.add_tasks(task)    
     def ask_openai_common(self,prompt):
         api_base = os.getenv('OPENAI_API_BASE', 'api.openai.com')  # Replace with your actual OpenAI API base URL
         api_key = os.getenv('OPENAI_API_KEY')  # Replace with your actual OpenAI API key
@@ -222,72 +218,6 @@ class AiEngine(object):
                     pbar.update(1)  # 更新进度条
 
         return tasks
-
-    def rescan_with_gpt4(self):
-
-        def to_scan_gpt4(task):
-            result = task.result
-            result_gpt4 = task.result_gpt4
-            #print(result)
-            return result is not None and len(result) > 0 and result.lower().startswith("yes") and len(result_gpt4) == 0
-
-        self.do_scan(True, to_scan_gpt4)
-
-    def check_function_vul_in_short_return(self, content, key_sentence, is_gpt4 = False):
-        variables={
-            "content": content,
-            "keyconcept": key_sentence
-        }
-        return self.llm.completion("getVulVersionV2", variables)
-    def generate_description(self, response_vul, content):
-        variables={
-            "response_vul": response_vul,
-            "content": content
-        }
-        return self.llm.completion("generateDescription", variables)
-    def generate_recommendation(self, response_vul, content):
-        variables={
-            "response_vul": response_vul,
-            "content": content
-        }
-        return self.llm.completion("generateRecommendation", variables)
-    def generate_title(self, response_vul, content):
-        variables={
-            "response_vul": response_vul,
-            "content": content
-        }
-        return self.llm.completion("generateTitle", variables)
-    # def generate_severity(self, response_vul, content):
-    #     variables={
-    #         "response_vul": response_vul,
-    #         "content": content
-    #     }
-    #     return self.llm.completion("generateSeverity", variables)
-    def check_vul_if_false_positive(self,response,content,origin_rule):
-        variables={
-            "code":content,
-            "vulresult":response
-        }
-        return self.llm.completion("checkFalsePositiveVersion1",variables)
-    def check_vul_if_false_positive_by_patch(self,response,content,origin_rule):
-        variables={
-            "code":content,
-            "vulresult":response
-        }
-        return self.llm.completion("checkFalsePositiveByPatchVersion1",variables)
-    def check_vul_if_false_positive_by_context(self,contract_code,response,content):
-        variables={
-            "contract_code":contract_code,
-            "code":content,
-            "vulresult":response
-        }
-        return self.llm.completion("checkFalsePositiveByContext",variables)
-    def check_vul_if_false_positive_by_context_v2(self,contract_code,response):
-        variables={
-            "contract_code":contract_code,
-            "vulresult":response
-        }
-        return self.llm.completion("checkVulBasedContext",variables)
 
 
 if __name__ == "__main__":

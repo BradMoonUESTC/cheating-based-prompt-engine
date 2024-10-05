@@ -14,8 +14,7 @@ import re
 根据每个function 的 functionality embbeding 匹配结果 
 '''
 class PlanningV2(object):
-    def __init__(self, llm, project,taskmgr) -> None:
-        self.llm = llm
+    def __init__(self, project,taskmgr) -> None:
         self.project = project
         self.taskmgr=taskmgr
         self.scan_list_for_larget_context=[]

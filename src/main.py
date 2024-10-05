@@ -6,27 +6,22 @@ import audit_config
 from ai_engine import *
 from project import ProjectAudit
 from library.dataset_utils import load_dataset, Project
-from planning import PlanningV1, PlanningV2
+from planning import PlanningV2
 from prompts import prompts
 from sqlalchemy import create_engine
 from dao import CacheManager, ProjectTaskMgr
 
-def scan_project(project, db_engine, use_vectorRule = False):
-    llm = createGptApi(audit_config, "pezzo", prompts, CacheManager(db_engine))
-
+def scan_project(project, db_engine):
     # 1. parsing projects  
     project_audit = ProjectAudit(project.id, project.path, db_engine)
     project_audit.parse(project.white_files, project.white_functions)
 
     # 2. planning & scanning
     project_taskmgr = ProjectTaskMgr(project.id, db_engine) 
-    if use_vectorRule:
-        planning = PlanningV2(llm, project_audit, project_taskmgr)
-    else:
-        planning = PlanningV1(llm, project_audit)
     
-    project_taskmgr = ProjectTaskMgr(project.id, db_engine)
-    engine = AiEngine(llm, planning, project_taskmgr)
+    planning = PlanningV2(project_audit, project_taskmgr)
+    # 
+    engine = AiEngine(planning, project_taskmgr)
     # 1. 扫描 
     engine.do_planning()
     engine.do_scan()
@@ -34,20 +29,10 @@ def scan_project(project, db_engine, use_vectorRule = False):
     # 2. gpt4 对结果做rescan 
     # rescan_project_with_gpt4(project.id, db_engine)
 
-def rescan_project_with_gpt4(project_id, db_engine):
-    llm = createGptApi(audit_config, "chatgpt", prompts, None, model=MODEL_GPT4)
-
-    project_taskmgr = ProjectTaskMgr(project_id, db_engine)
-    engine = AiEngine(llm, None, project_taskmgr)
-    engine.rescan_with_gpt4()
-
-
-def check_function_vul(func_body, engine, is_gpt4 = False):
-    model = MODEL_GPT4 if is_gpt4 else MODEL_GPT3
-    llm = createGptApi(audit_config, "pezzo", prompts, CacheManager(engine))
+def check_function_vul(engine):
     project_taskmgr = ProjectTaskMgr(project.id, engine)
-    engine = AiEngine(llm, None, project_taskmgr)
-    result = engine.check_function_vul()
+    engine = AiEngine(None, project_taskmgr)
+    engine.check_function_vul()
     # print(result)
 def generate_json(output_path,project_id):
     project_taskmgr = ProjectTaskMgr(project_id, engine)
@@ -101,18 +86,6 @@ def generate_json(output_path,project_id):
     file_name = output_path  # You can change the file name as needed
     with open(file_name, 'w') as file:
         file.write(json_string)
-def show_antlr_use():
-    from sgp.utilities.contract_extractor import extract_function_from_solidity
-
-    # 提取函数体
-    function_body = extract_function_from_solidity('divUp', 'test.sol')
-
-    # 从函数体中提取使用的状态变量
-    # state_variables_used = extract_state_variables_usage(function_body)
-
-    # print("Function Body:\n", function_body)
-    # print("\nState Variables Used in the Function:\n", state_variables_used)
-
 if __name__ == '__main__':
 
     switch_production_or_test = 'test' # prod / test
@@ -125,30 +98,16 @@ if __name__ == '__main__':
         dataset_base = "./src/dataset/agent-v1-c4"
         projects = load_dataset(dataset_base)
 
-        # project_id = 'labrado'
-        # project_id = 'whalefall'
-        # project_id = 'od-contracts'
-        # project_id = 'nextgen'
-        project_id = 'tact_test3'
+        project_id = 'shanxuan1212'
         project_path = ''
         project = Project(project_id, projects[project_id])
         
         cmd = 'detect_vul'
-        # cmd = 'detect_vul' 扫描
-        # cmd = 'check_vul_if_positive' 确认
         if cmd == 'detect_vul':
-            scan_project(project, engine, True) # scan
-            content = ''' '''
-            rule = ''' '''
-            check_function_vul(content, engine, True) # confirm
-
-        # elif cmd == 'recheck':
-        #     rescan_project_with_gpt4(project.id, engine)
-
+            scan_project(project, engine) # scan
+            check_function_vul(engine) # confirm
         elif cmd == 'check_vul_if_positive':
-            content = ''' '''
-            rule = ''' '''
-            check_function_vul(content, engine, True) # confirm
+            check_function_vul(engine) # confirm
 
         end_time=time.time()
         print("Total time:",end_time-start_time)
