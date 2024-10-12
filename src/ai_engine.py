@@ -121,7 +121,7 @@ class AiEngine(object):
                 response_vul = response_vul if response_vul is not None else "no"                
                 self.project_taskmgr.update_result(task.id, response_vul, "","")
     def do_scan(self, is_gpt4=False, filter_func=None):
-        self.llm.init_conversation()
+        # self.llm.init_conversation()
 
         tasks = self.project_taskmgr.get_task_list()
         if len(tasks) == 0:
@@ -201,7 +201,7 @@ class AiEngine(object):
             print("time cost of one task:",endtime-starttime)
         
     def check_function_vul(self):
-        self.llm.init_conversation()
+        # self.llm.init_conversation()
         tasks = self.project_taskmgr.get_task_list()
         if len(tasks) == 0:
             return

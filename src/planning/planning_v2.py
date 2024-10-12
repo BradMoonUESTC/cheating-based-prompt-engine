@@ -135,15 +135,6 @@ class PlanningV2(object):
                 pass  # 在这里可以处理JSON解析错误
 
         return json_objects
-
-    def get_vul_from_code(self,content,keyconcept):
-        response=''
-        varaibles = {
-            "content": content,
-            "keyconcept": keyconcept
-        }
-        response = self.llm.completion("getVulV41205", varaibles)
-        return response
     # Function to merge two rulesets based on sim_score
     def merge_and_sort_rulesets(self,high, medium):
         # Combine the two rulesets
