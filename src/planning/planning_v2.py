@@ -299,6 +299,9 @@ class PlanningV2(object):
                 # 返回一个list，这个list中包含着多条从public_external_function_name开始的业务流函数名
                 try:
                     function_lists = self.extract_filtered_functions(business_flow_list)
+                    # 判断function_lists中是否包含public_external_function_name，如果包含，则去掉
+                    if public_external_function_name in function_lists:
+                        function_lists.remove(public_external_function_name)
                 except Exception as e:
                     print(e)  
                 print("business_flow_list:",function_lists)
