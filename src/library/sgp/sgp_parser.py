@@ -270,7 +270,6 @@ def find_func_functions(text, filename, hash):
         })
 
     return functions
-
 def find_rust_functions(text, filename,hash):
     regex = r"((?:pub(?:\s*\([^)]*\))?\s+)?fn\s+\w+(?:<[^>]*>)?\s*\([^{]*\)(?:\s*->\s*[^{]*)?\s*\{)"
     matches = re.finditer(regex, text)
@@ -421,7 +420,6 @@ def find_move_functions(text, filename, hash):
         })
 
     return functions
-import re
 def find_go_functions(text, filename, hash):
     regex = r"func\s+.*\{"
     matches = re.finditer(regex, text)
