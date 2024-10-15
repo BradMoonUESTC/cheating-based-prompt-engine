@@ -61,8 +61,8 @@ def migrate_db(engine_from, engine_to):
 
 
 def do_migration():
-    db_url_from = os.getenv("DATABASE_SQLITE")
-    db_url_to = os.getenv("DATABASE_URL")
+    db_url_from = os.environ.get("DATABASE_SQLITE")
+    db_url_to = os.environ.get("DATABASE_URL")
 
     db_from = create_engine(db_url_from)
     db_to = create_engine(db_url_to)

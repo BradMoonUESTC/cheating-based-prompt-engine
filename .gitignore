@@ -6,3 +6,5 @@ src/.env
 src/__pycache__/ai_engine.cpython-312.pyc
 src/dataset/*
 */dataset/*
+docker.env
+.venv

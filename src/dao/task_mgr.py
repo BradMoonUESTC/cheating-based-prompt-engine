@@ -24,7 +24,7 @@ class ProjectTaskMgr(object):
     def query_task_by_project_id(self, id):
         return self._operate_in_session(self._query_task_by_project_id, id)
     def _query_task_by_project_id(self, session, id):
-        return session.query(Project_Task).filter_by(project_id=id).filter(Project_Task.result.like('%PATCH INFO%')).all()
+        return session.query(Project_Task).filter_by(project_id=id).all()
     
     def add_task(self, name, content, keyword, business_type, sub_business_type, function_type, rule, result='', result_gpt4='', score='0.00', category='', contract_code='', risklevel='',similarity_with_rule='',description='',start_line='',end_line='',relative_file_path='',absolute_file_path='', recommendation='',title='',business_flow_code='',business_flow_lines='',business_flow_context='',if_business_flow_scan='', **kwargs):
         task = Project_Task(self.project_id, name, content, keyword, business_type, sub_business_type, function_type, rule, result, result_gpt4, score, category, contract_code, risklevel,similarity_with_rule,description,start_line,end_line,relative_file_path,absolute_file_path, recommendation,title,business_flow_code,business_flow_lines,business_flow_context,if_business_flow_scan)

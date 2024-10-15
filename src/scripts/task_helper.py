@@ -10,7 +10,7 @@ def import_task(project_id, engine, file):
     tm.import_file(file)
 
 if __name__ == "__main__":
-    db_url_from = os.getenv("DATABASE_URL")
+    db_url_from = os.environ.get("DATABASE_URL")
     engine = create_engine(db_url_from)
 
     # test_cache_mgr(engine)
