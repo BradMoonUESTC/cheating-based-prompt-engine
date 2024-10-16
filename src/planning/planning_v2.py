@@ -1,13 +1,12 @@
+import json
 import random
 import time
 import requests
-from library.chatgpt_api2 import *
 from dao.entity import Project_Task
 import os, sys
 from tqdm import tqdm
 import pickle
-from library.vectorutils import get_top_k_similar, find_elbow_point, plot_elbow_curve
-from library.embedding_api import get_embbedding
+from openai_api.openai import *
 import re
 
 '''
@@ -19,7 +18,7 @@ class PlanningV2(object):
         self.taskmgr=taskmgr
         self.scan_list_for_larget_context=[]
 
-
+    
     def ask_openai_for_business_flow(self,function_name,contract_code_without_comment):
         prompt=f"""
         Based on the code above, analyze the business flows that start with the {function_name} function, consisting of multiple function calls. The analysis should adhere to the following requirements:
@@ -36,32 +35,8 @@ class PlanningV2(object):
         {prompt}
 
         """
-        api_base= os.getenv('OPENAI_API_BASE', 'api.openai.com')  # Replace with your actual OpenAI API base URL
-        api_key = os.getenv('OPENAI_API_KEY')  # Replace with your actual OpenAI API key
-        headers = {
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {api_key}"
-        }
-        data = {
-            "model": os.getenv('BUSINESS_FLOW_MODEL_ID'),
-            "response_format": { "type": "json_object" },
-            "messages": [
-                {
-                    "role": "system",
-                    "content": "You are a helpful assistant designed to output JSON."
-                },
-                {
-                    "role": "user",
-                    "content": question
-                }
-            ]
-        }
-        response = requests.post(f'https://{api_base}/v1/chat/completions', headers=headers, json=data)
-
-        response_josn = response.json()
-        if 'choices' not in response_josn:
-            return ''
-        return response_josn['choices'][0]['message']['content']
+        return common_ask_for_json(question)
+        
     def extract_filtered_functions(self, json_string):
         """
         Extracts function names from a JSON string. For function names and keys containing a period,
@@ -360,8 +335,8 @@ class PlanningV2(object):
     def do_planning(self):
         tasks = []
         print("Begin do planning...")
-        switch_function_code=eval(os.getenv('SWITCH_FUNCTION_CODE','False'))
-        switch_business_code=eval(os.getenv('SWITCH_BUSINESS_CODE','True'))
+        switch_function_code=eval(os.environ.get('SWITCH_FUNCTION_CODE','False'))
+        switch_business_code=eval(os.environ.get('SWITCH_BUSINESS_CODE','True'))
         tasks = self.taskmgr.get_task_list_by_id(self.project.project_id)
         if len(tasks) > 0:
             return 
@@ -390,7 +365,7 @@ class PlanningV2(object):
             if switch_business_code:
                 business_flow_code,line_info_list,other_contract_context=self.search_business_flow(all_business_flow, all_business_flow_line,all_business_flow_context, name.split(".")[1], contract_name)
                 if business_flow_code != "not found":
-                    for i in range(int(os.getenv('BUSINESS_FLOW_COUNT', 1))):
+                    for i in range(int(os.environ.get('BUSINESS_FLOW_COUNT', 1))):
                         task = Project_Task(
                             project_id=self.project.project_id,
                             name=name,
@@ -423,7 +398,7 @@ class PlanningV2(object):
                         task_count += 1
             
             if switch_function_code:
-                for i in range(int(os.getenv('BUSINESS_FLOW_COUNT', 1))):
+                for i in range(int(os.environ.get('BUSINESS_FLOW_COUNT', 1))):
                     task = Project_Task(
                         project_id=self.project.project_id,
                         name=name,

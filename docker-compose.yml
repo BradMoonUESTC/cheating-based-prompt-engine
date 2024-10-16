@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    volumes:
+      - ./src/dataset:/app/src/dataset
+      - ./output:/app/output
+    env_file:
+      - ./docker.env
+    depends_on:
+      - db
+    command: python /app/src/main.py -fpath /Users/oker/Desktop/trickPrompt-engine/shanxuan -id 1000shanxuan -cmd detect -o ./outputshanxuan.xlsx
+
+  db:
+    image: postgres:13
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: dockerdb
+      POSTGRES_USER: docker
+      POSTGRES_PASSWORD: docker
+    ports:
+      - "5433:5432"  # 将容器内的5432端口映射到主机的5433端口
+
+networks:
+  default:
+    name: mynetwork

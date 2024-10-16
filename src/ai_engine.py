@@ -1,17 +1,17 @@
 from concurrent.futures import ThreadPoolExecutor
+import json
 import re
 import threading
 import time
 import requests
 import tqdm
-from library.chatgpt_api2 import *
 from sklearn.metrics.pairwise import cosine_similarity
-from library.embedding_api import get_embbedding
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from tqdm import tqdm
 
 from prompt_factory.prompt_assembler import PromptAssembler
 from prompt_factory.core_prompt import CorePrompt
+from openai_api.openai import *
 class AiEngine(object):
 
     def __init__(self, planning, taskmgr):
@@ -21,61 +21,6 @@ class AiEngine(object):
 
     def do_planning(self):
         self.planning.do_planning()
-    def ask_openai_common(self,prompt):
-        api_base = os.getenv('OPENAI_API_BASE', 'api.openai.com')  # Replace with your actual OpenAI API base URL
-        api_key = os.getenv('OPENAI_API_KEY')  # Replace with your actual OpenAI API key
-        headers = {
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {api_key}"
-        }
-        data = {
-            "model": os.getenv('VUL_MODEL_ID'),  # Replace with your actual OpenAI model
-            "messages": [
-                {
-                    "role": "user",
-                    "content": prompt
-                }
-            ]
-        }
-        response = requests.post(f'https://{api_base}/v1/chat/completions', headers=headers, json=data)
-        try:
-            response_josn = response.json()
-        except Exception as e:
-            return ''
-        if 'choices' not in response_josn:
-            return ''
-        return response_josn['choices'][0]['message']['content']
-    def ask_openai_for_json(self,prompt):
-        api_base = os.getenv('OPENAI_API_BASE', 'api.openai.com')  # Replace with your actual OpenAI API base URL
-        api_key = os.getenv('OPENAI_API_KEY')  # Replace with your actual OpenAI API key
-        headers = {
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {api_key}"
-        }
-        data = {
-            "model": os.getenv('VUL_MODEL_ID'),
-            "response_format": { "type": "json_object" },
-            "messages": [
-                {
-                    "role": "system",
-                    "content": "You are a helpful assistant designed to output JSON."
-                },
-                {
-                    "role": "user",
-                    "content": prompt
-                }
-            ]
-        }
-        response = requests.post(f'https://{api_base}/v1/chat/completions', headers=headers, json=data)
-
-        response_josn = response.json()
-        if 'choices' not in response_josn:
-            return ''
-        return response_josn['choices'][0]['message']['content']
-    def calculate_similarity(self,input_text1, input_text2):
-        embedding1 = get_embbedding(input_text1)
-        embedding2 = get_embbedding(input_text2)
-        return cosine_similarity([embedding1], [embedding2])[0][0]
     def extract_title_from_text(self,input_text):
         try:
             # Regular expression pattern to capture the value of the title field
@@ -116,7 +61,7 @@ class AiEngine(object):
             else:
                 print("\t to scan")
                 prompt=PromptAssembler.assemble_prompt(code_to_be_tested)
-                response_vul=self.ask_openai_common(prompt)
+                response_vul=common_ask(prompt)
                 print(response_vul)
                 response_vul = response_vul if response_vul is not None else "no"                
                 self.project_taskmgr.update_result(task.id, response_vul, "","")
@@ -157,7 +102,7 @@ class AiEngine(object):
                 business_flow_context=task.business_flow_context
                 # 结果打标记，标记处那些会进行假设的vul，通常他们都不是vul
                 prompt_filter_with_assumation=business_flow_code+"\n"+result+"\n\n"+CorePrompt.assumation_prompt()
-                response_if_assumation=str(self.ask_openai_common(prompt_filter_with_assumation))
+                response_if_assumation=str(common_ask(prompt_filter_with_assumation))
                 self.project_taskmgr.update_result(task.id, result, result_CN,response_if_assumation)
             
         else:
@@ -171,7 +116,7 @@ class AiEngine(object):
             code_to_be_tested=business_flow_code+"\n"+business_flow_context if if_business_flow_scan=="1" else function_code
             for attempt in range(3):  # 最多尝试3次
                 prompt = PromptAssembler.assemble_vul_check_prompt(code_to_be_tested, result)
-                response_final = str(self.ask_openai_for_json(prompt))
+                response_final = str(common_ask_for_json(prompt))
                 print(response_final)
                 def parse_result(json_string):
                     try:
@@ -195,7 +140,7 @@ class AiEngine(object):
 
             # 结果打标记，标记处那些会进行假设的vul，通常他们都不是vul
             prompt_filter_with_assumation=business_flow_code+"\n"+result+"\n\n"+CorePrompt.category_check()
-            response_if_assumation=str(self.ask_openai_for_json(prompt_filter_with_assumation))
+            response_if_assumation=str(common_ask_for_json(prompt_filter_with_assumation))
             self.project_taskmgr.update_result(task.id, result, response_final,response_if_assumation)
             endtime=time.time()
             print("time cost of one task:",endtime-starttime)

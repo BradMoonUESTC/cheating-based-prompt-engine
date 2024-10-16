@@ -159,8 +159,8 @@ def parse_project(project_path, project_filter = None):
         project_filter = BaseProjectFilter([], [])
 
     ignore_folders = set()
-    if os.getenv('IGNORE_FOLDERS'):
-        ignore_folders = set(os.getenv('IGNORE_FOLDERS').split(','))
+    if os.environ.get('IGNORE_FOLDERS'):
+        ignore_folders = set(os.environ.get('IGNORE_FOLDERS').split(','))
     ignore_folders.add('.git')
     all_results = []
     for dirpath, dirs, files in os.walk(project_path):

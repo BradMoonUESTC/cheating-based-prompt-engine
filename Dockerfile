@@ -1,32 +1,30 @@
-FROM ubuntu:22.04
+FROM python:3.9.6
 
-COPY src /app
-COPY requirements.txt /app/
+ENV DEBIAN_FRONTEND=noninteractive
+
+# 安装 PostgreSQL 客户端和其他必要的包
+RUN apt-get update && apt-get install -y \
+    postgresql-client \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
-ARG DATABASE_URL
-ARG PEZZO_API_KEY
-ARG PEZZO_PROJECT_ID
-ARG PEZZO_ENVIRONMENT
-ARG SSH_PRIVATE_KEY
+# 复制应用程序文件
+COPY src/ ./src/
+COPY requirements.txt ./
 
-ENV DATABASE_URL=${DATABASE_URL:-postgresql://postgres:1234@localhost:5432/postgres} \
-    PEZZO_API_KEY=${PEZZO_API_KEY:-test} \
-    PEZZO_PROJECT_ID=${PEZZO_PROJECT_ID:-clmeshz6f007vwt0he19wbsy0} \
-    PEZZO_ENVIRONMENT=${PEZZO_ENVIRONMENT:-Production}
+# 安装 Python 依赖
+RUN pip install --no-cache-dir -r requirements.txt
 
-RUN apt update && \
-    apt install -y software-properties-common openssh-client git && \
-    add-apt-repository ppa:deadsnakes/ppa -y && \
-    apt install -y --no-install-recommends openjdk-17-jdk python3.10 python3-pip pkg-config vim libcairo2-dev && \
-    mkdir -p /root/.ssh && \
-    chmod 0700 /root/.ssh && \
-    ssh-keyscan github.com >> /root/.ssh/known_hosts && \
-    echo "${SSH_PRIVATE_KEY}" > /root/.ssh/id_rsa && \
-    chmod 0600 /root/.ssh/id_rsa && \
-    python3.10 -m pip install -r /app/requirements.txt && \
-    python3.10 -c "import tiktoken; tiktoken.get_encoding('cl100k_base')" && \
-    rm -rf /var/lib/apt/lists/* && \
-    sed -i "s/BUILD_TIME/`date`/g" /app/buildTime.py
+# 复制启动脚本
+COPY start.sh /start.sh
+RUN chmod +x /start.sh
 
-CMD ["tail", "-f", "/dev/null"]
+# 设置环境变量
+ENV PYTHONPATH=/app/src
+
+# 使用启动脚本作为入口点
+ENTRYPOINT ["/start.sh"]
+
+# 默认命令
+CMD ["python", "/app/src/main.py"]

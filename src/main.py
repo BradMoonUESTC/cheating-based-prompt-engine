@@ -10,6 +10,10 @@ from planning import PlanningV2
 from prompts import prompts
 from sqlalchemy import create_engine
 from dao import CacheManager, ProjectTaskMgr
+import os
+import pandas as pd
+from openpyxl import Workbook,load_workbook
+from openpyxl.utils.dataframe import dataframe_to_rows
 
 def scan_project(project, db_engine):
     # 1. parsing projects  
@@ -34,71 +38,83 @@ def check_function_vul(engine):
     engine = AiEngine(None, project_taskmgr)
     engine.check_function_vul()
     # print(result)
-def generate_json(output_path,project_id):
+
+def generate_excel(output_path, project_id):
     project_taskmgr = ProjectTaskMgr(project_id, engine)
-    entities=project_taskmgr.query_task_by_project_id(project.id)
-    json_results = {
-        "version": "1.0.0",
-        "success": True,
-        "message": None,
-        "results": [],
-        "fileMapping": {}
-    }
-
+    entities = project_taskmgr.query_task_by_project_id(project.id)
+    
+    # 创建一个空的DataFrame来存储所有实体的数据
+    data = []
+    
     for entity in entities:
-        if float(entity.similarity_with_rule) < 0.82:
-            continue
-        if '"result": "no"' in str(entity.description):
-            continue
-        line_info_list = entity.business_flow_lines  # 每个元素是一个(start_line, end_line)元组
-                # 移除字符串两端的单引号或双引号（如果有的话）
-        line_info_str = line_info_list.strip('"\'') 
-        line_info_set = ast.literal_eval(line_info_str)
-        line_info_list = list(line_info_set)
-        line_info_tuples = [ast.literal_eval(item) for item in line_info_list]
-        # 根据line_info_list创建多个affectedFiles条目
-        affected_files_list = []
-        for start_line, end_line in line_info_tuples:
-            affected_file = {
-                "filePath": entity.relative_file_path,  # Assuming entity has a relative_file_path attribute
-                "range": {
-                    "start": {"line": int(start_line)},
-                    "end": {"line": int(end_line)}
-                },
-                "highlights": []
-            }
-            affected_files_list.append(affected_file)
+        # if '"result": "no"' in str(entity.result_gpt4) or '"result":"no"' in str(entity.result_gpt4):
+        #     continue
+        
+        data.append({
+            '漏洞结果': entity.result,
+            'ID': entity.id,
+            '项目名称': entity.project_id,
+            '合同编号': entity.contract_code,
+            'UUID': entity.key,
+            '函数名称': entity.name,
+            '函数代码': entity.content,
+            '开始行': entity.start_line,
+            '结束行': entity.end_line,
+            '相对路径': entity.relative_file_path,
+            '绝对路径': entity.absolute_file_path,
+            '业务流程代码': entity.business_flow_code,
+            '业务流程行': entity.business_flow_lines,
+            '业务流程上下文': entity.business_flow_context
+        })
+    
+    # 将数据转换为DataFrame
+    df = pd.DataFrame(data)
+    
+    # 确保输出目录存在
+    output_dir = os.path.dirname(output_path)
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+    
+    # 检查文件是否存在，如果不存在则创建新文件
+    if not os.path.exists(output_path):
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "项目数据"
+    else:
+        wb = load_workbook(output_path)
+        if "项目数据" in wb.sheetnames:
+            ws = wb["项目数据"]
+        else:
+            ws = wb.create_sheet("项目数据")
+    
+    # 如果工作表是空的，添加表头
+    if ws.max_row == 1:
+        for col, header in enumerate(df.columns, start=1):
+            ws.cell(row=1, column=col, value=header)
+    
+    # 将DataFrame数据写入工作表
+    for row in dataframe_to_rows(df, index=False, header=False):
+        ws.append(row)
+    
+    # 保存Excel文件
+    wb.save(output_path)
+    
+    print(f"Excel文件已保存到: {output_path}")
 
-        result_obj = {
-            "code": "logic-error",
-            "severity": "HIGH",
-            "title": entity.title,  # Assuming entity has a title attribute
-            "description": entity.description,  # Assuming entity has a description attribute
-            "recommendation": entity.recommendation,
-            "affectedFiles": affected_files_list
-        }
-        json_results["results"].append(result_obj)
-
-    # Convert the constructed structure to JSON format
-    json_string = json.dumps(json_results, indent=4)
-
-    # Save the JSON to a file
-    file_name = output_path  # You can change the file name as needed
-    with open(file_name, 'w') as file:
-        file.write(json_string)
+        
 if __name__ == '__main__':
 
-    switch_production_or_test = 'test' # prod / test
+    switch_production_or_test = 'prod' # prod / test
 
     if switch_production_or_test == 'test':
         start_time=time.time()
-        db_url_from = os.getenv("DATABASE_URL")
+        db_url_from = os.environ.get("DATABASE_URL")
         engine = create_engine(db_url_from)
         
         dataset_base = "./src/dataset/agent-v1-c4"
         projects = load_dataset(dataset_base)
 
-        project_id = 'shanxuan1212'
+        project_id = 'shanxuan12121313133333'
         project_path = ''
         project = Project(project_id, projects[project_id])
         
@@ -111,33 +127,37 @@ if __name__ == '__main__':
 
         end_time=time.time()
         print("Total time:",end_time-start_time)
-        generate_json("output.json",project_id)
+        generate_excel("./output.xlsx",project_id)
         
         
     if switch_production_or_test == 'prod':
         # Set up command line argument parsing
         parser = argparse.ArgumentParser(description='Process input parameters for vulnerability scanning.')
-        parser.add_argument('-path', type=str, required=True, help='Combined base path for the dataset and folder')
+        parser.add_argument('-fpath', type=str, required=True, help='Combined base path for the dataset and folder')
         parser.add_argument('-id', type=str, required=True, help='Project ID')
-        parser.add_argument('-cmd', type=str, choices=['detect_vul', 'check_vul_if_positive'], required=True, help='Command to execute')
+        parser.add_argument('-cmd', type=str, choices=['detect', 'confirm','all'], required=True, help='Command to execute')
         parser.add_argument('-o', type=str, required=True, help='Output file path')
         # usage:
         # python main.py 
-        # --path ../../dataset/agent-v1-c4/Archive 
+        # --fpath ../../dataset/agent-v1-c4/Archive 
         # --id Archive_aaa 
-        # --cmd detect_vul
+        # --cmd detect
 
         # Parse arguments
         args = parser.parse_args()
-
+        print("fpath:",args.fpath)
+        print("id:",args.id)
+        print("cmd:",args.cmd)
+        print("o:",args.o)
         # Split dataset_folder into dataset and folder
-        dataset_base, folder_name = os.path.split(args.path)
-
+        dataset_base, folder_name = os.path.split(args.fpath)
+        print("dataset_base:",dataset_base)
+        print("folder_name:",folder_name)
         # Start time
         start_time = time.time()
 
         # Database setup
-        db_url_from = os.getenv("DATABASE_URL")
+        db_url_from = os.environ.get("DATABASE_URL")
         engine = create_engine(db_url_from)
 
         # Load projects
@@ -145,22 +165,17 @@ if __name__ == '__main__':
         project = Project(args.id, projects[args.id])
 
         # Execute command
-        if args.cmd == 'detect_vul':
-            scan_project(project, engine, True)  # scan
-            content = ''' '''
-            rule = ''' '''
-            check_function_vul(content, engine, True)  # confirm
-        elif args.cmd == 'check_vul_if_positive':
-            content = ''' '''
-            rule = ''' '''
-            check_function_vul(content, engine, True)  # confirm
+        if args.cmd == 'detect':
+            scan_project(project, engine)  # scan            
+        elif args.cmd == 'confirm':
+            check_function_vul(engine)  # confirm
+        elif args.cmd == 'all':
+            scan_project(project, engine)  # scan
+            check_function_vul(engine)  # confirm
 
-        project_taskmgr = ProjectTaskMgr(project.id, engine)
-        print(project_taskmgr.query_task_by_project_id(project.id))
-        # End time and print total time
         end_time = time.time()
         print("Total time:", end_time -start_time)
-        generate_json(args.o,project.id)
+        generate_excel(args.o,args.id)
 
 
 
