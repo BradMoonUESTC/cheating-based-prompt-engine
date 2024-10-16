@@ -3,14 +3,18 @@
 环境设置如下：
 
 1. 使用 `src/db.sql` 创建数据库，需要提前安装 PostgreSQL。
+2. 安装依赖，建议python版本3.9.6
+```
+pip install -r requirements.txt
+```
 
-2. 设置 `.env` 文件，通过创建 `.env` 文件并填写以下内容来配置你的环境：
+3. 设置 `.env` 文件，通过创建 `.env` 文件并填写以下内容来配置你的环境：
 
 ```
 # 数据库连接信息
 DATABASE_URL=postgresql://postgres:1234@127.0.0.1:5432/postgres
 OPENAI_API_BASE="apix.ai-gaochao.cn"
-OPENAI_API_KEY=sk-hQfski4aO06WQD0jF442Da78D4Ef4f758c678aC095Dc0a9b
+OPENAI_API_KEY=xxxxxx
 VUL_MODEL_ID=gpt-4-1106-preview
 AZURE_API_KEY="xxxxxxx"
 AZURE_API_BASE="https://web3-westus.openai.azure.com/"
