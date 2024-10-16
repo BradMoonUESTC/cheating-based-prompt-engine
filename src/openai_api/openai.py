@@ -77,7 +77,7 @@ def azure_openai_json(prompt):
         print("Azure OpenAI测试失败。错误:", str(e))
         return None
     
-def ask_openai_common(self,prompt):
+def ask_openai_common(prompt):
         api_base = os.environ.get('OPENAI_API_BASE', 'api.openai.com')  # Replace with your actual OpenAI API base URL
         api_key = os.environ.get('OPENAI_API_KEY')  # Replace with your actual OpenAI API key
         headers = {
@@ -101,7 +101,7 @@ def ask_openai_common(self,prompt):
         if 'choices' not in response_josn:
             return ''
         return response_josn['choices'][0]['message']['content']
-def ask_openai_for_json(self,prompt):
+def ask_openai_for_json(prompt):
     api_base = os.environ.get('OPENAI_API_BASE', 'api.openai.com')  # Replace with your actual OpenAI API base URL
     api_key = os.environ.get('OPENAI_API_KEY')  # Replace with your actual OpenAI API key
     headers = {
