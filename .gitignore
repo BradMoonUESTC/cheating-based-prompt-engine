@@ -24,6 +24,5 @@ Thumbs.db
 src/dataset/*
 */dataset/*
 
-# 特定Python文件
-src/planning/__pycache__/planning_v2.cpython-312.pyc
-src/__pycache__/ai_engine.cpython-312.pyc
+# 特定生成的文件
+output/
