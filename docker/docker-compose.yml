@@ -1,0 +1,58 @@
+services:
+  prompt-engine:
+    build:
+      context: ..
+      dockerfile: ./docker/Dockerfile
+    volumes:
+      - ../projects:/prompt-engine/projects       # 挂载项目根目录的 src 目录到容器中
+      - ../output:/prompt-engine/output # 挂载项目根目录的 output 目录到容器中
+    env_file: ./.env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    # command: python /prompt-engine/src/main.py -fpath projects/shanxuan -id 1000shanxuan -cmd detect -o output/shanxuan.xlsx
+    networks:
+      - prompt
+    environment:
+      DATABASE_URL: "postgresql://${POSTGRES_USER_NAME}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB_NAME}"
+      OPENAI_API_BASE: "${OPENAI_API_BASE}"
+      OPENAI_API_KEY: "${OPENAI_API_KEY}"
+      VUL_MODEL_ID: "${VUL_MODEL_ID}"
+      AZURE_API_KEY: "${AZURE_API_KEY}"
+      AZURE_API_BASE: "${AZURE_API_BASE}"
+      AZURE_API_VERSION: "${AZURE_API_VERSION}"
+      AZURE_DEPLOYMENT_NAME: "${AZURE_DEPLOYMENT_NAME}"
+      AZURE_OR_OPENAI: "${AZURE_OR_OPENAI}"
+      BUSINESS_FLOW_COUNT: "${BUSINESS_FLOW_COUNT}"
+      SWITCH_FUNCTION_CODE: "${SWITCH_FUNCTION_CODE}"
+      SWITCH_BUSINESS_CODE: "${SWITCH_BUSINESS_CODE}"
+
+  postgres:
+    image: postgres:13
+    container_name: Prompt-Postgres
+    volumes:
+      - prompt_postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql  # 添加初始化 SQL 脚本
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB_NAME}
+      - POSTGRES_USER=${POSTGRES_USER_NAME}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    ports:
+      - ${POSTGRES_PORT}:5432  # 将容器内的5432端口映射到主机的5433端口
+    networks:
+      - prompt
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER_NAME} -d ${POSTGRES_DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+networks:
+  prompt:
+    driver: bridge
+
+volumes:
+  prompt_postgres_data:
+    driver: local
