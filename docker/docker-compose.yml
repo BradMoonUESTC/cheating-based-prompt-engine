@@ -1,3 +1,4 @@
+name: prompt-engine
 services:
   prompt-engine:
     build:
