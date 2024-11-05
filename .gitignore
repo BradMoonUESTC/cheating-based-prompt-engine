@@ -9,3 +9,4 @@ src/dataset/*
 .venv
 docker.env
 
+src/dataset/.DS_Store
