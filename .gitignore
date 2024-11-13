@@ -26,3 +26,7 @@ src/dataset/*
 
 # 特定生成的文件
 output/
+.venv
+docker.env
+
+src/dataset/.DS_Store

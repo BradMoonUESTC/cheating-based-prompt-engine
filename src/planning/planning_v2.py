@@ -241,7 +241,7 @@ class PlanningV2(object):
             else:
                 all_public_external_function_names = [
                     function['name'].split(".")[1] for function in functions
-                    if check_function_if_public_or_external(function['content'])
+                    # if check_function_if_public_or_external(function['content'])
                     # and not check_function_if_view_or_pure(function['content'])
                 ]
             print("all_public_external_function_names count:",len(all_public_external_function_names))
@@ -250,6 +250,7 @@ class PlanningV2(object):
             # 有了函数名列表，有了contract_code_without_comments，可以进行业务流的GPT提问了
             print("-----------------asking openai for business flow-----------------")
             for public_external_function_name in all_public_external_function_names:
+                # time.sleep(10)
                 print("***public_external_function_name***:",public_external_function_name)
                 if "_python" in str(contract_name) and len(all_public_external_function_names)==1:
                     key = all_public_external_function_names[0]
@@ -260,7 +261,7 @@ class PlanningV2(object):
                         business_flow_list = self.ask_openai_for_business_flow(public_external_function_name, contract_code_without_comments)
                     except Exception as e:
                         business_flow_list=[]
-                if len(business_flow_list)==0:
+                if (not business_flow_list) or (len(business_flow_list)==0):
                     continue
                 # 返回一个list，这个list中包含着多条从public_external_function_name开始的业务流函数名
                 try:
