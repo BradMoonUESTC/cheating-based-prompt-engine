@@ -25,7 +25,11 @@ class ProjectTaskMgr(object):
         return self._operate_in_session(self._query_task_by_project_id, id)
     def _query_task_by_project_id(self, session, id):
         return session.query(Project_Task).filter_by(project_id=id).all()
-    
+    def update_business_flow_context(self,id,context):
+        self._operate_in_session(self._update_business_flow_context,id,context)
+    def _update_business_flow_context(self,session,id,context):
+        session.query(Project_Task).filter_by(id=id).update({Project_Task.business_flow_context: context})
+        session.commit()
     def add_task(self, name, content, keyword, business_type, sub_business_type, function_type, rule, result='', result_gpt4='', score='0.00', category='', contract_code='', risklevel='',similarity_with_rule='',description='',start_line='',end_line='',relative_file_path='',absolute_file_path='', recommendation='',title='',business_flow_code='',business_flow_lines='',business_flow_context='',if_business_flow_scan='', **kwargs):
         task = Project_Task(self.project_id, name, content, keyword, business_type, sub_business_type, function_type, rule, result, result_gpt4, score, category, contract_code, risklevel,similarity_with_rule,description,start_line,end_line,relative_file_path,absolute_file_path, recommendation,title,business_flow_code,business_flow_lines,business_flow_context,if_business_flow_scan)
         self._operate_in_session(self._add_task, task, **kwargs)

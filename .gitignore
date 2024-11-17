@@ -10,3 +10,4 @@ src/dataset/*
 docker.env
 
 src/dataset/.DS_Store
+src/codebaseQA/lancedb/*

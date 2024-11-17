@@ -284,6 +284,9 @@ class PlanningV2(object):
                 for function in function_lists:
                     if str(function)=="-1":
                         continue
+                    if isinstance(function, float):
+                        continue
+
                     function_name_to_search=contract_name+"."+function
                     function_structure=get_function_structure(functions, function_name_to_search)
                     if function_structure is not None:
@@ -346,7 +349,7 @@ class PlanningV2(object):
             name=function['name']
             if "test" in name:
                 self.project.functions_to_check.remove(function)
-
+        
         if switch_business_code:
             all_business_flow,all_business_flow_line,all_business_flow_context=self.get_all_business_flow(self.project.functions_to_check)                    
         

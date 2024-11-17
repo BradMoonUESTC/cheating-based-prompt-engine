@@ -3,6 +3,7 @@ import json
 import re
 import threading
 import time
+from typing import List
 import requests
 import tqdm
 from sklearn.metrics.pairwise import cosine_similarity
@@ -15,11 +16,13 @@ from prompt_factory.core_prompt import CorePrompt
 from openai_api.openai import *
 class AiEngine(object):
 
-    def __init__(self, planning, taskmgr):
+    def __init__(self, planning, taskmgr,lancedb,lance_table_name,project_audit):
         # Step 1: 获取results
         self.planning = planning
         self.project_taskmgr = taskmgr
-
+        self.lancedb=lancedb
+        self.lance_table_name=lance_table_name
+        self.project_audit=project_audit
     def do_planning(self):
         self.planning.do_planning()
     def extract_title_from_text(self,input_text):
@@ -163,10 +166,97 @@ class AiEngine(object):
             self.project_taskmgr.update_result(task.id, result, response_final,response_if_assumation)
             endtime=time.time()
             print("time cost of one task:",endtime-starttime)
+    def get_related_functions(self,query,k=3):
+        query_embedding = common_get_embedding(query)
+        table = self.lancedb.open_table(self.lance_table_name)
+        return table.search(query_embedding).limit(k).to_list()
+    
+    def extract_related_functions_by_level(self, function_names: List[str], level: int) -> str:
+        """
+        从call_trees中提取指定函数相关的上下游函数信息并扁平化处理
         
+        Args:
+            function_names: 要分析的函数名列表
+            level: 要分析的层级深度
+            
+        Returns:
+            str: 所有相关函数内容的拼接文本
+        """
+        def get_functions_from_tree(tree, current_level=0, max_level=level, collected_funcs=None):
+            """递归获取树中指定层级内的所有函数信息"""
+            if collected_funcs is None:
+                collected_funcs = []
+                
+            if not tree or current_level > max_level:
+                return collected_funcs
+                
+            # 添加当前节点的函数信息
+            if tree['function_data']:
+                collected_funcs.append(tree['function_data'])
+                
+            # 递归处理子节点
+            if current_level < max_level:
+                for child in tree['children']:
+                    get_functions_from_tree(child, current_level + 1, max_level, collected_funcs)
+                    
+            return collected_funcs
+
+        all_related_functions = []
+        
+        # 遍历每个指定的函数名
+        for func_name in function_names:
+            # 在call_trees中查找对应的树
+            for tree_data in self.project_audit.call_trees:
+                if tree_data['function'] == func_name:
+                    # 处理上游调用树
+                    if tree_data['upstream_tree']:
+                        upstream_funcs = get_functions_from_tree(tree_data['upstream_tree'])
+                        all_related_functions.extend(upstream_funcs)
+                        
+                    # 处理下游调用树
+                    if tree_data['downstream_tree']:
+                        downstream_funcs = get_functions_from_tree(tree_data['downstream_tree'])
+                        all_related_functions.extend(downstream_funcs)
+                    
+                    # 添加原始函数本身
+                    for func in self.project_audit.functions_to_check:
+                        if func['name'].split('.')[-1] == func_name:
+                            all_related_functions.append(func)
+                            break
+                            
+                    break
+        
+        # 去重处理
+        seen_functions = set()
+        unique_functions = []
+        for func in all_related_functions:
+            func_name = func['name']
+            if func_name not in seen_functions:
+                seen_functions.add(func_name)
+                unique_functions.append(func)
+        
+        # 拼接所有函数内容
+        combined_text = '\n'.join(func['content'] for func in unique_functions)
+        
+        return combined_text
+
+
     def check_function_vul(self):
         # self.llm.init_conversation()
         tasks = self.project_taskmgr.get_task_list()
+        # 用codebaseQA的形式进行，首先通过rag和task中的vul获取相应的核心三个最相关的函数
+        for task in tasks:
+            if task.if_business_flow_scan=="1":
+                # 获取business_flow_context
+                code_to_be_tested=task.business_flow_code
+            else:
+                code_to_be_tested=task.content
+            related_functions=self.get_related_functions(code_to_be_tested,3)
+            related_functions_names=[func['name'].split('.')[-1] for func in related_functions]
+            combined_text=self.extract_related_functions_by_level(related_functions_names,3)
+            # 更新task对应的business_flow_context
+            self.project_taskmgr.update_business_flow_context(task.id,combined_text)
+
         if len(tasks) == 0:
             return
 
