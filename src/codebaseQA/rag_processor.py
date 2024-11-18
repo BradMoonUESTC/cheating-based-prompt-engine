@@ -36,7 +36,7 @@ class RAGProcessor:
             return
 
         self._create_database(functions_to_check)
-        return self
+        
 
     def table_exists(self) -> bool:
         """检查表是否存在"""

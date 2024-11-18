@@ -70,7 +70,8 @@ def generate_excel(output_path, project_id):
             '业务流程代码': entity.business_flow_code,
             '业务流程行': entity.business_flow_lines,
             '业务流程上下文': entity.business_flow_context,
-            '确认结果': entity.result_gpt4
+            '确认结果': entity.result_gpt4,
+            '确认细节':entity.category
         })
     
     # 将数据转换为DataFrame
@@ -120,7 +121,7 @@ if __name__ == '__main__':
         dataset_base = "./src/dataset/agent-v1-c4"
         projects = load_dataset(dataset_base)
 
-        project_id = 'shanxuanall'
+        project_id = 'approveV3'
         project_path = ''
         project = Project(project_id, projects[project_id])
         

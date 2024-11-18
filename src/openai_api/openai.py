@@ -78,36 +78,7 @@ def azure_openai_json(prompt):
     except requests.exceptions.RequestException as e:
         print("Azure OpenAI测试失败。错误:", str(e))
         return None
-def ask_claude(prompt):
-    api_key = os.environ.get('CLAUDE_API_KEY')
-    api_url = os.environ.get('CLAUDE_API_URL')
-    headers = {
-        'Content-Type': 'application/json',
-        'Authorization': f'Bearer {api_key}'
-    }
 
-    data = {
-        'model': 'claude-3-sonnet-20240229',#模型
-        'max_tokens': 1000,
-        'messages': [
-
-            {
-                'role': 'user',
-                'content': prompt
-            }
-        ]
-    }
-
-    response = requests.post(api_url, headers=headers, data=json.dumps(data))
-
-    if response.status_code == 200:
-        response_data = response.json()
-        if 'choices' in response_data and len(response_data['choices']) > 0:
-            return response_data['choices'][0]['message']['content']
-        else:
-            return "Error: Unexpected response structure"
-    else:
-        return f"Error: {response.status_code}, {response.text}"
     
 def ask_openai_common(prompt):
         api_base = os.environ.get('OPENAI_API_BASE', 'api.openai.com')  # Replace with your actual OpenAI API base URL
@@ -166,10 +137,45 @@ def common_ask_for_json(prompt):
         return azure_openai_json(prompt)
     else:
         return ask_openai_for_json(prompt)
+def ask_claude(prompt):
+    api_key = os.environ.get('OPENAI_API_KEY')
+    api_base = os.environ.get('OPENAI_API_BASE', 'https://apix.ai-gaochao.cn')
+    
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': f'Bearer {api_key}'
+    }
+
+    data = {
+        'model': 'claude-3-5-sonnet-20240620',
+        'messages': [
+            {
+                'role': 'user',
+                'content': prompt
+            }
+        ]
+    }
+
+    try:
+        response = requests.post(f'https://{api_base}/v1/chat/completions', 
+                               headers=headers, 
+                               json=data)
+        response.raise_for_status()
+        response_data = response.json()
+        if 'choices' in response_data and len(response_data['choices']) > 0:
+            return response_data['choices'][0]['message']['content']
+        else:
+            return ""
+    except requests.exceptions.RequestException as e:
+        print(f"Claude API调用失败。错误: {str(e)}")
+        return ""
 
 def common_ask(prompt):
-    if os.environ.get('AZURE_OR_OPENAI') == 'AZURE':
+    model_type = os.environ.get('AZURE_OR_OPENAI', 'CLAUDE')
+    if model_type == 'AZURE':
         return azure_openai(prompt)
+    elif model_type == 'CLAUDE':
+        return ask_claude(prompt)
     else:
         return ask_openai_common(prompt)
 

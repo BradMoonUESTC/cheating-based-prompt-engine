@@ -9,3 +9,7 @@ class VulCheckPrompt:
         return result in json as {"analysis":"xxxxxx(detailed analyasis of the code)","result":"yes"} or {"analysis":"xxxxxx(detailed analyasis of the code)","result":"no"} or {"analysis":"xxxxxx(detailed analyasis of the code)","result":"not sure"}
         you must output the analysis first, and then provide a conclusion based on the analysis at the end.
         """
+    def vul_check_prompt_claude():
+        return """
+        First analyze this vulnerability, and then determine if it really exists
+        """
