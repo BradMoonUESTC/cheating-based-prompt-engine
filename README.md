@@ -1,3 +1,7 @@
+
+在2024.11.19, 第一个大版本完成了，这个版本经过多次打磨，正式被称为1.0版本，这个版本的能力预示着基于LLM审计的可行性和产品化的可行性！
+In 2024.11.19, The first major version has been completed. After multiple rounds of refinement, it is officially designated as version 1.0. The capabilities demonstrated in this version indicate the feasibility of LLM-based auditing and its potential for productization!
+
 # Recently Updated
 2024.04.29:
 1. Add function to basiclly support rust language.
@@ -24,6 +28,7 @@
 
 2024.08.02
 Inspired by the paper https://arxiv.org/abs/2407.21787v1, the project was renamed to finite-money-prompt-engine on August 2, 2024.
+
 
 
 # TODO
