@@ -4,7 +4,7 @@ from library.parsing.callgraph import CallGraph
 import os
 import re
 
-from sgp.utilities.contract_extractor import extract_state_variables_from_code
+from library.sgp.utilities.contract_extractor import extract_state_variables_from_code
 from .project_settings import FILE_PARTIAL_WHITE_LIST, PATH_PARTIAL_WHITE_LIST, PATH_WHITE_LIST, OPENZEPPELIN_CONTRACTS,OPENZEPPELIN_FUNCTIONS
 
 class Function(dict):
