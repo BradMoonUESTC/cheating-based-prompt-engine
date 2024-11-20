@@ -1,5 +1,5 @@
 
-# FiniteMoney
+# FiniteMonkey
 
 <p align="center">
   <img src="https://img.shields.io/badge/license-GPL--3.0-blue.svg">
@@ -9,7 +9,7 @@
   <img src="https://img.shields.io/github/stars/BradMoonUESTC/finite-monkey-engine?style=flat-square">
 </p>
 
-FiniteMoney is an advanced vulnerability mining engine powered purely by GPT, requiring no prior knowledge base or fine-tuning. Its effectiveness significantly surpasses most current related research approaches.
+FiniteMonkey is an advanced vulnerability mining engine powered purely by GPT, requiring no prior knowledge base or fine-tuning. Its effectiveness significantly surpasses most current related research approaches.
 
 ## 🌟 Core Philosophy
 
@@ -29,7 +29,7 @@ As of May 2024, this tool has helped identify vulnerabilities worth over $60,000
 **2024.11.19**: Version 1.0 released - Demonstrating feasibility of LLM-based auditing and productization
 
 **Earlier Updates:**
-- 2024.08.02: Project renamed to finite-money-prompt-engine
+- 2024.08.02: Project renamed to finite-monkey-engine
 - 2024.08.01: Added support for func, tact
 - 2024.07.23: Added support for cairo, move
 - 2024.07.01: Updated license
