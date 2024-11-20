@@ -134,4 +134,4 @@ Contributions welcome! Please feel free to submit pull requests.
 
 ---
 
-*Note: Originally inspired by [Large Language Monkeys paper](https://arxiv.org/abs/2407.21787v1)*
+*Note: The name is inspired by [Large Language Monkeys paper](https://arxiv.org/abs/2407.21787v1)*
