@@ -296,7 +296,6 @@ class AiEngine(object):
             combined_text=self.extract_related_functions_by_level(related_functions_names,6)
             # 更新task对应的business_flow_context
             self.project_taskmgr.update_business_flow_context(task.id,combined_text)
-            self.project_
 
         if len(tasks) == 0:
             return

@@ -11,5 +11,5 @@ class VulCheckPrompt:
         """
     def vul_check_prompt_claude():
         return """
-        First analyze this vulnerability, and then determine if it really exists
+        First analyze this vulnerability, and then determine if it really exists, beaware, the contract version is larger then 0.8.0, so overflow is not possible.
         """
