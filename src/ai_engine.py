@@ -222,6 +222,10 @@ class AiEngine(object):
             'downstream_stats': {}
         }
         
+        # 使用集合进行更严格的去重
+        seen_functions = set()  # 存储函数的唯一标识符
+        unique_functions = []   # 存储去重后的函数
+        
         # 遍历每个指定的函数名
         for func_name in function_names:
             # 在call_trees中查找对应的树
@@ -254,18 +258,36 @@ class AiEngine(object):
                             break
                                 
                     break
-            
-        # 去重处理
-        seen_functions = set()
-        unique_functions = []
+        
+        # 增强的去重处理
         for func in all_related_functions:
-            func_name = func['name']
-            if func_name not in seen_functions:
-                seen_functions.add(func_name)
+            # 创建一个更精确的唯一标识符，包含函数名和内容的hash
+            func_identifier = f"{func['name']}_{hash(func['content'])}"
+            if func_identifier not in seen_functions:
+                seen_functions.add(func_identifier)
                 unique_functions.append(func)
         
-        # 拼接所有函数内容
-        combined_text = '\n'.join(func['content'] for func in unique_functions)
+        # 拼接所有函数内容，包括状态变量
+        combined_text_parts = []
+        for func in unique_functions:
+            # 查找对应的状态变量
+            state_vars = None
+            for tree_data in self.project_audit.call_trees:
+                if tree_data['function'] == func['name'].split('.')[-1]:
+                    state_vars = tree_data.get('state_variables', '')
+                    break
+            
+            # 构建函数文本，包含状态变量
+            function_text = []
+            if state_vars:
+                function_text.append("// Contract State Variables:")
+                function_text.append(state_vars)
+                function_text.append("\n// Function Implementation:")
+            function_text.append(func['content'])
+            
+            combined_text_parts.append('\n'.join(function_text))
+        
+        combined_text = '\n\n'.join(combined_text_parts)
         
         # 打印统计信息
         print(f"\nFunction Call Tree Statistics:")
@@ -286,6 +308,8 @@ class AiEngine(object):
         tasks = self.project_taskmgr.get_task_list()
         # 用codebaseQA的形式进行，首先通过rag和task中的vul获取相应的核心三个最相关的函数
         for task in tqdm(tasks,desc="Processing tasks for update business_flow_context"):
+            if task.score=="1":
+                continue
             if task.if_business_flow_scan=="1":
                 # 获取business_flow_context
                 code_to_be_tested=task.business_flow_code
@@ -296,6 +320,8 @@ class AiEngine(object):
             combined_text=self.extract_related_functions_by_level(related_functions_names,6)
             # 更新task对应的business_flow_context
             self.project_taskmgr.update_business_flow_context(task.id,combined_text)
+            self.project_taskmgr.update_score(task.id,"1")
+            
 
         if len(tasks) == 0:
             return

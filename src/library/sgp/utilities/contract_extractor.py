@@ -139,12 +139,36 @@ def check_function_if_view_or_pure(function_code):
     return keyword_presence["view"] or keyword_presence["pure"]
     
 def extract_state_variables_from_code(contract_code):
-    state_variable_pattern = re.compile(
-        r'[public|private|internal|external]?\s+\w+;')
+    # 1. 首先只保留合约开头到第一个函数定义之前的部分
+    contract_start = contract_code.split('function')[0]
+    
+    # 2. 移除 event 和 error 定义
+    lines = contract_start.split('\n')
+    state_var_lines = []
+    for line in lines:
+        line = line.strip()
+        if line and not line.startswith('event') and not line.startswith('error') and ';' in line:
+            state_var_lines.append(line)
+    
+    print("Filtered lines:")
+    for line in state_var_lines:
+        print(line)
+    print("=" * 50)
+    
+    # 3. 修改正则表达式，捕获完整的声明包括赋值部分
+    state_var_pattern = r'^\s*(mapping[^;]+|uint(?:\d*)|int(?:\d*)|bool|string|address|bytes(?:\d*)|[a-zA-Z_]\w*(?:\[\])?|[a-zA-Z_]\w*)\s+((?:public|private|internal|external|constant|immutable|\s+)*)\s*([a-zA-Z_]\w*)([^;]*);'
 
-    state_variables = [each.split(' ')[-1].replace(';', '') for each in state_variable_pattern.findall(contract_code)]
+    result = []
+    for line in state_var_lines:
+        matches = re.findall(state_var_pattern, line)
+        if matches:
+            for type_, modifiers, var, assignment in matches:
+                # 包含赋值部分（如果存在）
+                declaration = f"{type_.strip()} {' '.join(modifiers.split())} {var}{assignment};".replace('  ', ' ').strip()
+                result.append(declaration)
+    
+    return result
 
-    return state_variables
 def extract_modifier_names_of_a_function(function_code):
     modifier_pattern = re.compile(r'(\w+)\s*\(')
     matches = modifier_pattern.findall(function_code)

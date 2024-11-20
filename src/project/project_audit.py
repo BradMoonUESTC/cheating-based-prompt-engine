@@ -127,13 +127,14 @@ class ProjectAudit(object):
             # print("\nUpstream call tree (functions that call this function):")
             upstream_tree = self.build_call_tree(func_name, relationships, 'upstream', func_map)
             downstream_tree = self.build_call_tree(func_name, relationships, 'downstream', func_map)
-            # print(func['contract_code'])
-            # state_variables = extract_state_variables_from_code(func['contract_code'])
-
+            print(func['contract_code'])
+            state_variables = extract_state_variables_from_code(func['contract_code'])
+            state_variables_text = '\n'.join(state_variables) if state_variables else ''
             call_trees.append({
                 'function': func_name,
                 'upstream_tree': upstream_tree,
-                'downstream_tree': downstream_tree
+                'downstream_tree': downstream_tree,
+                'state_variables': state_variables_text
             })
         
         self.call_trees = call_trees

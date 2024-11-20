@@ -25,6 +25,11 @@ class ProjectTaskMgr(object):
         return self._operate_in_session(self._query_task_by_project_id, id)
     def _query_task_by_project_id(self, session, id):
         return session.query(Project_Task).filter_by(project_id=id).all()
+    def update_score(self,id,score):
+        self._operate_in_session(self._update_score,id,score)
+    def _update_score(self,session,id,score):
+        session.query(Project_Task).filter_by(id=id).update({Project_Task.score: score})
+        session.commit()
     def update_business_flow_context(self,id,context):
         self._operate_in_session(self._update_business_flow_context,id,context)
     def _update_business_flow_context(self,session,id,context):
