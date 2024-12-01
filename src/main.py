@@ -15,6 +15,7 @@ import pandas as pd
 from openpyxl import Workbook,load_workbook
 from openpyxl.utils.dataframe import dataframe_to_rows
 from codebaseQA.rag_processor import RAGProcessor
+from res_processor.res_processor import ResProcessor
 
 def scan_project(project, db_engine):
     # 1. parsing projects  
@@ -50,32 +51,50 @@ def generate_excel(output_path, project_id):
     
     # 创建一个空的DataFrame来存储所有实体的数据
     data = []
-    
     for entity in entities:
-        # if '"result": "no"' in str(entity.result_gpt4) or '"result":"no"' in str(entity.result_gpt4):
-        #     continue
-        
-        data.append({
-            '漏洞结果': entity.result,
-            'ID': entity.id,
-            '项目名称': entity.project_id,
-            '合同编号': entity.contract_code,
-            'UUID': entity.key,
-            '函数名称': entity.name,
-            '函数代码': entity.content,
-            '开始行': entity.start_line,
-            '结束行': entity.end_line,
-            '相对路径': entity.relative_file_path,
-            '绝对路径': entity.absolute_file_path,
-            '业务流程代码': entity.business_flow_code,
-            '业务流程行': entity.business_flow_lines,
-            '业务流程上下文': entity.business_flow_context,
-            '确认结果': entity.result_gpt4,
-            '确认细节':entity.category
-        })
+        if "yes" in str(entity.result_gpt4).lower():
+            data.append({
+                '漏洞结果': entity.result,
+                'ID': entity.id,
+                '项目名称': entity.project_id,
+                '合同编号': entity.contract_code,
+                'UUID': entity.key,
+                '函数名称': entity.name,
+                '函数代码': entity.content,
+                '开始行': entity.start_line,
+                '结束行': entity.end_line,
+                '相对路径': entity.relative_file_path,
+                '绝对路径': entity.absolute_file_path,
+                '业务流程代码': entity.business_flow_code,
+                '业务流程行': entity.business_flow_lines,
+                '业务流程上下文': entity.business_flow_context,
+                '确认结果': entity.result_gpt4,
+                '确认细节': entity.category
+            })
     
     # 将数据转换为DataFrame
+    if not data:  # 检查是否有数据
+        print("No data to process")
+        return
+        
     df = pd.DataFrame(data)
+    
+    try:
+        # 对df进行漏洞归集处理
+        res_processor = ResProcessor(df)
+        processed_df = res_processor.process()
+        
+        # 确保所有必需的列都存在
+        required_columns = df.columns
+        for col in required_columns:
+            if col not in processed_df.columns:
+                processed_df[col] = ''
+                
+        # 重新排列列顺序以匹配原始DataFrame
+        processed_df = processed_df[df.columns]
+    except Exception as e:
+        print(f"Error processing data: {e}")
+        processed_df = df  # 如果处理失败，使用原始DataFrame
     
     # 确保输出目录存在
     output_dir = os.path.dirname(output_path)
@@ -96,19 +115,17 @@ def generate_excel(output_path, project_id):
     
     # 如果工作表是空的，添加表头
     if ws.max_row == 1:
-        for col, header in enumerate(df.columns, start=1):
+        for col, header in enumerate(processed_df.columns, start=1):
             ws.cell(row=1, column=col, value=header)
     
     # 将DataFrame数据写入工作表
-    for row in dataframe_to_rows(df, index=False, header=False):
+    for row in dataframe_to_rows(processed_df, index=False, header=False):
         ws.append(row)
     
     # 保存Excel文件
     wb.save(output_path)
     
     print(f"Excel文件已保存到: {output_path}")
-
-        
 if __name__ == '__main__':
 
     switch_production_or_test = 'test' # prod / test
@@ -121,7 +138,7 @@ if __name__ == '__main__':
         dataset_base = "./src/dataset/agent-v1-c4"
         projects = load_dataset(dataset_base)
 
-        project_id = 'shanxuanlambo3'
+        project_id = 'pacarb'
         project_path = ''
         project = Project(project_id, projects[project_id])
         

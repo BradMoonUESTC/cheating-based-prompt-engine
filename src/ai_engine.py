@@ -96,86 +96,106 @@ class AiEngine(object):
         result = task.get_result(False)
         result_CN=task.get_result_CN()
         category_mark=task.get_category()
-        if result_CN is not None and len(result_CN) > 0 and result_CN !="None":
-            if category_mark is not None and len(category_mark)>0:
-                print("\t skipped (scanned)")
-            else:
-                # print("\t to mark in assumation")
-                prompt=PromptAssembler.assemble_vul_check_prompt(task.content,result_CN)
-                function_code=task.content
-                if_business_flow_scan = task.if_business_flow_scan
-                business_flow_code = task.business_flow_code
-                business_flow_context=task.business_flow_context
-                # 结果打标记，标记处那些会进行假设的vul，通常他们都不是vul
-                # prompt_filter_with_assumation=business_flow_code+"\n"+result+"\n\n"+CorePrompt.assumation_prompt()
-                # response_if_assumation=str(common_ask(prompt_filter_with_assumation))
-                response_if_assumation=""
-                self.project_taskmgr.update_result(task.id, result, result_CN,response_if_assumation)
+        if result_CN is not None and len(result_CN) > 0 and result_CN !="None" and category_mark is not None and len(category_mark)>0:
+            print("\t skipped (scanned)")
+            return
             
-        else:
-            print("\t to confirm")
-            function_code=task.content
-            if_business_flow_scan = task.if_business_flow_scan
-            business_flow_code = task.business_flow_code
-            business_flow_context=task.business_flow_context
-            
-            code_to_be_tested=business_flow_code+"\n"+business_flow_context if if_business_flow_scan=="1" else function_code
-            
-            yes_count = 0
-            not_sure_count = 0
-            all_responses = []  # Store all responses
-            
-            for attempt in range(3):
+        print("\t to confirm")
+        function_code=task.content
+        if_business_flow_scan = task.if_business_flow_scan
+        business_flow_code = task.business_flow_code
+        business_flow_context=task.business_flow_context
+        
+        code_to_be_tested=business_flow_code+"\n"+business_flow_context if if_business_flow_scan=="1" else function_code
+        
+        # First attempt to get a valid response
+        prompt = PromptAssembler.assemble_vul_check_prompt(code_to_be_tested, result)
+        response_from_claude=ask_claude(prompt)
+        if not response_from_claude or response_from_claude=="":
+            print(f"\t Skipping task {task.id} due to empty response")
+            return
+        print(response_from_claude)
+        
+        prompt_translate_claude_response_to_json=PromptAssembler.brief_of_response()
+        response = str(common_ask_for_json(response_from_claude+"\n"+prompt_translate_claude_response_to_json))
+        
+        # Check if first response is empty
+
+        
+        yes_count = 0
+        not_sure_count = 0
+        all_responses = []
+        all_responses.append(response_from_claude+response)
+        print(response)
+        
+        def parse_result(json_string):
+            try:
+                data = json.loads(json_string)
+                return data.get("result", None)
+            except json.JSONDecodeError:
+                print("Invalid JSON string")
+                return None
+        
+        result_status = parse_result(response)
+        if result_status is not None:
+            result_status = result_status.lower()
+            if "not sure" in result_status:
+                not_sure_count += 1
+                print(f"\t got not sure on attempt 1")
+            elif "no" in result_status:
+                print(f"\t confirmed no vulnerability on attempt 1")
+                response_final = "no"
+            elif "yes" in result_status:
+                yes_count += 1
+                print(f"\t got yes on attempt 1")
+        
+        # Only continue with additional attempts if first one wasn't "no"
+        if response_final != "no":
+            for attempt in range(2):
                 prompt = PromptAssembler.assemble_vul_check_prompt(code_to_be_tested, result)
                 response_from_claude=ask_claude(prompt)
                 print(response_from_claude)
-                # 用claude去问，结果更solid，然后再用gpt去进行json转换
-                prompt_translate_claude_response_to_json="based on the analysis response, please translate the response to json format, the json format is as follows: {'brief of response':'xxx','result':'yes'} or {'brief of response':'xxx','result':'no'} or {'brief of response':'xxx','result':'not sure'}"
+                
                 response = str(common_ask_for_json(response_from_claude+"\n"+prompt_translate_claude_response_to_json))
-                all_responses.append(response_from_claude+response)  # Add response to list
+                
+                # If any subsequent response is empty, stop the task
+                if not response or response.isspace():
+                    print(f"\t Skipping task {task.id} due to empty response")
+                    return
+                    
+                all_responses.append(response_from_claude+response)
                 print(response)
                 
-                def parse_result(json_string):
-                    try:
-                        data = json.loads(json_string)
-                        return data.get("result", None)
-                    except json.JSONDecodeError:
-                        print("Invalid JSON string")
-                        return None
-                
                 result_status = parse_result(response)
-                
                 if result_status is not None:
                     result_status = result_status.lower()
-                    if "not sure" in result_status:  # 先判断not sure
+                    if "not sure" in result_status:
                         not_sure_count += 1
-                        print(f"\t got not sure on attempt {attempt + 1}")
-                    elif "no" in result_status:  # 再判断no
-                        print(f"\t confirmed no vulnerability on attempt {attempt + 1}")
+                        print(f"\t got not sure on attempt {attempt + 2}")
+                    elif "no" in result_status:
+                        print(f"\t confirmed no vulnerability on attempt {attempt + 2}")
                         response_final = "no"
-                        break  # 有no直接结束
-                    elif "yes" in result_status:  # 最后判断yes
+                        break
+                    elif "yes" in result_status:
                         yes_count += 1
-                        print(f"\t got yes on attempt {attempt + 1}")
+                        print(f"\t got yes on attempt {attempt + 2}")
                 
-                # 最后一次循环结束后判断结果
-                if attempt == 2:
-                    if yes_count >= 2:  # 2-3次yes
+                # Final determination after all attempts
+                if attempt == 1:
+                    if yes_count >= 2:
                         response_final = "yes"
                         print("\t confirmed potential vulnerability with majority yes")
-                    elif yes_count == 1 and not_sure_count == 2:  # 1次yes，2次not sure
+                    elif yes_count == 1 and not_sure_count == 2:
                         response_final = "not sure"
                         print("\t result inconclusive with more not sure responses")
-                    else:  # 其他情况(3次not sure)
+                    else:
                         response_final = "not sure"
                         print("\t result inconclusive")
 
-            # Combine all responses
-            response_if_assumation = "\n".join([f"Attempt {i+1}: {resp}" for i, resp in enumerate(all_responses)])
-            
-            self.project_taskmgr.update_result(task.id, result, response_final, response_if_assumation)
-            endtime=time.time()
-            print("time cost of one task:",endtime-starttime)
+        response_if_assumation = "\n".join([f"Attempt {i+1}: {resp}" for i, resp in enumerate(all_responses)])
+        self.project_taskmgr.update_result(task.id, result, response_final, response_if_assumation)
+        endtime=time.time()
+        print("time cost of one task:",endtime-starttime)
     def get_related_functions(self,query,k=3):
         query_embedding = common_get_embedding(query)
         table = self.lancedb.open_table(self.lance_table_name)
