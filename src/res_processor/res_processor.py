@@ -1,7 +1,7 @@
 import pandas as pd
 from tqdm import tqdm
-import re
-from openai_api.openai import ask_claude
+import json
+from openai_api.openai import ask_claude, common_ask_for_json
 import concurrent.futures
 from threading import Lock
 
@@ -76,34 +76,75 @@ class ResProcessor:
         base_info = group.iloc[0].copy()
         
         merge_prompt = """
-        合并一下这几个漏洞，用中文输出，如果存在多个不同漏洞，则分开，
-        但要保证如下：1. 合并的结果相比于原来的漏洞结果不能有任何信息或漏洞缺失；
-        2. 每个合并后的漏洞描述必须非常详细，不能少于600个字用原来的原文翻译来描述漏洞，不能有任何表述遗漏，否则你会受到惩罚，
-        输出方式如下\n\n
-        合并漏洞1：
-        漏洞描述:
-        
-        合并漏洞2：
-        漏洞描述:
-        
-        合并漏洞3:
-        漏洞描述:
+        合并一下这几个漏洞，将相同或本质相似漏洞合并到一起，用中文输出，如果存在多个不同漏洞，则分开描述，
+        但要保证如下:1. 合并的结果相比于原来的漏洞结果不能有任何信息或漏洞缺失，且合并的相同或本质相似的漏洞描述要全面不能有遗漏；
+        2. 每个合并后的漏洞描述必须非常详细,不能少于600个字用原来的原文翻译来描述漏洞,不能有任何表述遗漏，否则你会受到惩罚，
+        输出格式如下，必须严格遵循格式输出
+        {
+            "merged_vulnerabilities": [
+                {"description": "合并后的漏洞1描述"},
+                {"description": "合并后的漏洞2描述"},
+                ...
+            ]
+        }
         """
         for _, row in group.iterrows():
             merge_prompt += f"漏洞结果：{row['漏洞结果']}\n"
             merge_prompt += "---\n"
         
-        merged_description = ask_claude(merge_prompt)
+        merged_result = common_ask_for_json(merge_prompt)
         
-        # 使用正则表达式分割合并后的漏洞描述
-        vulnerability_parts = re.split(r'合并漏洞\d+', merged_description)
-        # 移除空字符串
-        vulnerability_parts = [part.strip() for part in vulnerability_parts if part.strip()]
-        
-        # 如果没有匹配到预期格式或分割后为空，返回原始合并描述
-        if not vulnerability_parts:
+        try:
+            merged_data = json.loads(merged_result)
+            vulnerabilities = merged_data.get('merged_vulnerabilities', [])
+            
+            if not vulnerabilities:
+                return {
+                    '漏洞结果': merged_result,
+                    'ID': base_info['ID'],
+                    '项目名称': base_info['项目名称'],
+                    '合同编号': base_info['合同编号'],
+                    'UUID': base_info['UUID'],
+                    '函数名称': base_info['函数名称'],
+                    '函数代码': base_info['函数代码'],
+                    '开始行': min(group['开始行']),
+                    '结束行': max(group['结束行']),
+                    '相对路径': base_info['相对路径'],
+                    '绝对路径': base_info['绝对路径'],
+                    '业务流程代码': base_info['业务流程代码'],
+                    '业务流程行': base_info['业务流程行'],
+                    '业务流程上下文': base_info['业务流程上下文'],
+                    '确认结果': base_info['确认结果'],
+                    '确认细节': base_info['确认细节']
+                }
+            
+            results = []
+            for vuln in vulnerabilities:
+                results.append({
+                    '漏洞结果': vuln['description'],
+                    'ID': base_info['ID'],
+                    '项目名称': base_info['项目名称'],
+                    '合同编号': base_info['合同编号'],
+                    'UUID': base_info['UUID'],
+                    '函数名称': base_info['函数名称'],
+                    '函数代码': base_info['函数代码'],
+                    '开始行': min(group['开始行']),
+                    '结束行': max(group['结束行']),
+                    '相对路径': base_info['相对路径'],
+                    '绝对路径': base_info['绝对路径'],
+                    '业务流程代码': base_info['业务流程代码'],
+                    '业务流程行': base_info['业务流程行'],
+                    '业务流程上下文': base_info['业务流程上下文'],
+                    '确认结果': base_info['确认结果'],
+                    '确认细节': base_info['确认细节']
+                })
+            
+            return results
+            
+        except json.JSONDecodeError:
+            # Fallback in case of JSON parsing error
             return {
-                '漏洞结果': merged_description,
+                '漏洞结果': merged_result,
                 'ID': base_info['ID'],
                 '项目名称': base_info['项目名称'],
                 '合同编号': base_info['合同编号'],
@@ -120,51 +161,6 @@ class ResProcessor:
                 '确认结果': base_info['确认结果'],
                 '确认细节': base_info['确认细节']
             }
-        
-        # 检查是否包含"合并漏洞"关键字，如果不包含则返回原始结果
-        if '合并漏洞' not in merged_description:
-            return {
-                '漏洞结果': merged_description,
-                'ID': base_info['ID'],
-                '项目名称': base_info['项目名称'],
-                '合同编号': base_info['合同编号'],
-                'UUID': base_info['UUID'],
-                '函数名称': base_info['函数名称'],
-                '函数代码': base_info['函数代码'],
-                '开始行': min(group['开始行']),
-                '结束行': max(group['结束行']),
-                '相对路径': base_info['相对路径'],
-                '绝对路径': base_info['绝对路径'],
-                '业务流程代码': base_info['业务流程代码'],
-                '业务流程行': base_info['业务流程行'],
-                '业务流程上下文': base_info['业务流程上下文'],
-                '确认结果': base_info['确认结果'],
-                '确认细节': base_info['确认细节']
-            }
-        
-        # 为每个分割的漏洞创建单独的记录
-        results = []
-        for vuln_desc in vulnerability_parts:
-            results.append({
-                '漏洞结果': vuln_desc.strip(),
-                'ID': base_info['ID'],
-                '项目名称': base_info['项目名称'],
-                '合同编号': base_info['合同编号'],
-                'UUID': base_info['UUID'],
-                '函数名称': base_info['函数名称'],
-                '函数代码': base_info['函数代码'],
-                '开始行': min(group['开始行']),
-                '结束行': max(group['结束行']),
-                '相对路径': base_info['相对路径'],
-                '绝对路径': base_info['绝对路径'],
-                '业务流程代码': base_info['业务流程代码'],
-                '业务流程行': base_info['业务流程行'],
-                '业务流程上下文': base_info['业务流程上下文'],
-                '确认结果': base_info['确认结果'],
-                '确认细节': base_info['确认细节']
-            })
-        
-        return results
 
     def _clean_text(self, text):
         if pd.isna(text):
