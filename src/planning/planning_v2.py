@@ -222,7 +222,7 @@ class PlanningV2(object):
                 all_public_external_function_names = [
                     function['name'].split(".")[1] for function in functions
                 ]
-            elif "_move" in str(contract_name) or contract_name is None:
+            elif any(function['relative_file_path'].endswith('.move') for function in functions):
                 all_public_external_function_names = [
                     function['name'].split(".")[1] for function in functions if function['visibility']=='public'
                 ]
@@ -286,7 +286,8 @@ class PlanningV2(object):
                         continue
                     if isinstance(function, float):
                         continue
-
+                    if contract_name is None:
+                        print("contract_name is None")
                     function_name_to_search=contract_name+"."+function
                     function_structure=get_function_structure(functions, function_name_to_search)
                     if function_structure is not None:

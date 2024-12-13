@@ -182,7 +182,7 @@ def parse_project(project_path, project_filter = None):
     # fix func name 
     fs = []
     for func in functions:
-        name = func['name'][8:]
+        name = func['name'][8:] # remove special_前缀，具体为啥我也忘了，似乎是为了考虑特定的function name
         func['name'] = "%s.%s" % (func['contract_name'], name)
         fs.append(func)
 

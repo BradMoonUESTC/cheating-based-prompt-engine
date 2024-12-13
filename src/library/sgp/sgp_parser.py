@@ -410,8 +410,8 @@ def find_move_functions(text, filename, hash):
             'offset_end': 0,
             'content': function_body,
             'header': match.group(1).strip(),  # 新增：函数头部
-            'contract_name': filename.replace('.move', '_move' + str(hash)),
-            'contract_code': contract_code,
+            'contract_name': filename.replace('.move', ''),
+            'contract_code': text,
             'modifiers': ['native'] if is_native else [],
             'stateMutability': None,
             'returnParameters': None,

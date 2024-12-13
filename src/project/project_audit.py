@@ -2,7 +2,7 @@ import csv
 from .project_parser import parse_project, BaseProjectFilter
 import re
 from graphviz import Digraph
-from library.sgp.utilities.contract_extractor import extract_state_variables_from_code
+from library.sgp.utilities.contract_extractor import extract_state_variables_from_code, extract_state_variables_from_code_move
 
 class ProjectAudit(object):
     def analyze_function_relationships(self, functions_to_check):
@@ -127,8 +127,11 @@ class ProjectAudit(object):
             # print("\nUpstream call tree (functions that call this function):")
             upstream_tree = self.build_call_tree(func_name, relationships, 'upstream', func_map)
             downstream_tree = self.build_call_tree(func_name, relationships, 'downstream', func_map)
-            print(func['contract_code'])
-            state_variables = extract_state_variables_from_code(func['contract_code'])
+            # print(func['contract_code'])
+            if func['relative_file_path'].endswith('.move'):
+                state_variables = extract_state_variables_from_code_move(func['contract_code'],func['relative_file_path'])
+            else:
+                state_variables = extract_state_variables_from_code(func['contract_code'])
             state_variables_text = '\n'.join(state_variables) if state_variables else ''
             call_trees.append({
                 'function': func_name,

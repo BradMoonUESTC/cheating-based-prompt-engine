@@ -138,6 +138,41 @@ def check_function_if_view_or_pure(function_code):
     signature, keyword_presence = extract_function_signature(function_code)
     return keyword_presence["view"] or keyword_presence["pure"]
     
+def extract_state_variables_from_code_move(contract_code, relative_file_path: str):
+    if relative_file_path.endswith('.move'):
+        # 1. 分割代码,只保留到第一个函数定义之前的部分
+        contract_start = contract_code.split('fun')[0]
+        
+        # 2. 按行分割并过滤
+        lines = contract_start.split('\n')
+        state_var_lines = []
+        
+        for line in lines:
+            line = line.strip()
+            # 跳过空行和注释
+            if not line or line.startswith('//'):
+                continue
+            # 保留 const 定义和 struct 定义
+            if line.startswith('const'):
+                state_var_lines.append(line)
+        
+        # 3. 使用正则表达式匹配
+        # 匹配 const 定义
+        const_pattern = r'const\s+(\w+).*?;'
+        
+        result = []
+        
+        for line in state_var_lines:
+            # 处理 const 定义 - 直接保留整行
+            if line.startswith('const'):
+                const_match = re.match(const_pattern, line)
+                if const_match:
+                    result.append(line)
+                continue       
+                
+        return result
+    
+    return []  # 如果不是 .move 文件则返回空列表
 def extract_state_variables_from_code(contract_code):
     # 1. 首先只保留合约开头到第一个函数定义之前的部分
     contract_start = contract_code.split('function')[0]
