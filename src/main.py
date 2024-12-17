@@ -135,7 +135,7 @@ if __name__ == '__main__':
         db_url_from = os.environ.get("DATABASE_URL")
         engine = create_engine(db_url_from)
         
-        dataset_base = "./src/dataset/agent-v1-c4"
+        dataset_base = "./dataset/agent-v1-c4"
         projects = load_dataset(dataset_base)
 
         project_id = 'move_test1'
