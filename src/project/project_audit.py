@@ -129,7 +129,7 @@ class ProjectAudit(object):
             # print(func['contract_code'])
             if func['relative_file_path'].endswith('.move'):
                 state_variables = extract_state_variables_from_code_move(func['contract_code'],func['relative_file_path'])
-            else:
+            if func['relative_file_path'].endswith('.sol') or func['relative_file_path'].endswith('.fr'):
                 state_variables = extract_state_variables_from_code(func['contract_code'])
             state_variables_text = '\n'.join(state_variables) if state_variables else ''
             call_trees.append({

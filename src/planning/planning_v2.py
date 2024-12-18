@@ -230,6 +230,10 @@ class PlanningV2(object):
                 all_public_external_function_names = [
                     function['name'].split(".")[1] for function in functions if function['visibility']=='public'
                 ]
+            elif any(function['relative_file_path'].endswith('.java') for function in functions):
+                all_public_external_function_names = [
+                    function['name'].split(".")[1] for function in functions if function['visibility'] in ['public','protected']
+                ]
             elif "_cairo" in str(contract_name) or contract_name is None:
                 all_public_external_function_names = [
                     function['name'].split(".")[1] for function in functions if function['visibility']=='public'

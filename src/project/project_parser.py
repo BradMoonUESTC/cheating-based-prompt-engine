@@ -52,7 +52,7 @@ class BaseProjectFilter(object):
 
     def filter_file(self, path, filename):
         # 检查文件后缀
-        valid_extensions = ('.sol', '.rs', '.py', '.move', '.cairo', '.tact', '.fc', '.fr')
+        valid_extensions = ('.sol', '.rs', '.py', '.move', '.cairo', '.tact', '.fc', '.fr','.java')
         if not any(filename.endswith(ext) for ext in valid_extensions) or filename.endswith('.t.sol'):
             return True
 
