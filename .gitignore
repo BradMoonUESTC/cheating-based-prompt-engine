@@ -16,3 +16,4 @@ src/dataset/agent-v1-c4/datasets.json
 src/dataset/agent-v1-c4/datasets.json
 .DS_Store
 src/.DS_Store
+.env
