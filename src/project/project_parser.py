@@ -52,7 +52,8 @@ class BaseProjectFilter(object):
 
     def filter_file(self, path, filename):
         # 检查文件后缀
-        if not (filename.endswith(".sol") or filename.endswith(".rs") or filename.endswith(".py") or filename.endswith(".move") or filename.endswith(".cairo") or filename.endswith(".tact") or filename.endswith(".fc") or filename.endswith(".fr")) or filename.endswith(".t.sol"):
+        valid_extensions = ('.sol', '.rs', '.py', '.move', '.cairo', '.tact', '.fc', '.fr')
+        if not any(filename.endswith(ext) for ext in valid_extensions) or filename.endswith('.t.sol'):
             return True
 
         # 如果白名单不为空，检查文件是否在白名单中

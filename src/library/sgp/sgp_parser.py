@@ -678,7 +678,7 @@ def find_fa_functions(text, filename, hash):
             'offset_start': 0,
             'offset_end': 0,
             'content': function_body,
-            'contract_name': filename.replace('.fr', '_fa' + str(hash)),
+            'contract_name': filename.replace('.fr', ''),
             'contract_code': contract_code,
             'modifiers': modifiers,
             'stateMutability': None,
