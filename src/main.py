@@ -52,7 +52,7 @@ def generate_excel(output_path, project_id):
     # 创建一个空的DataFrame来存储所有实体的数据
     data = []
     for entity in entities:
-        if "yes" in str(entity.result_gpt4).lower() and len(entity.business_flow_code)>600:
+        if "yes" in str(entity.result_gpt4).lower() and len(entity.business_flow_code)<=600:
             data.append({
                 '漏洞结果': entity.result,
                 'ID': entity.id,
@@ -138,7 +138,7 @@ if __name__ == '__main__':
         dataset_base = "./src/dataset/agent-v1-c4"
         projects = load_dataset(dataset_base)
 
-        project_id = 'move_test1'
+        project_id = 'chillz'
         project_path = ''
         project = Project(project_id, projects[project_id])
         

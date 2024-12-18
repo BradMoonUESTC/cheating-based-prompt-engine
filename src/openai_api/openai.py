@@ -126,7 +126,8 @@ def ask_openai_for_json(prompt):
         ]
     }
     response = requests.post(f'https://{api_base}/v1/chat/completions', headers=headers, json=data)
-
+    if response.status_code != 200:
+        print(response.text)
     response_josn = response.json()
     if 'choices' not in response_josn:
         return ''
@@ -138,6 +139,7 @@ def common_ask_for_json(prompt):
     else:
         return ask_openai_for_json(prompt)
 def ask_claude(prompt):
+    model = os.environ.get('CLAUDE_MODEL', 'claude-3-5-sonnet-20240620')
     api_key = os.environ.get('OPENAI_API_KEY')
     api_base = os.environ.get('OPENAI_API_BASE', 'https://apix.ai-gaochao.cn')
     
@@ -147,7 +149,7 @@ def ask_claude(prompt):
     }
 
     data = {
-        'model': 'claude-3-5-sonnet-20240620',
+        'model': model,
         'messages': [
             {
                 'role': 'user',

@@ -362,8 +362,8 @@ class PlanningV2(object):
             content = function['content']
             contract_code=function['contract_code']
             contract_name=function['contract_name']
-            # if len(self.scan_list_for_larget_context)>0 and contract_name not in self.scan_list_for_larget_context:
-            #     continue
+            if len(self.scan_list_for_larget_context)>0 and contract_name not in self.scan_list_for_larget_context:
+                continue
             task_count = 0
             print(f"————————Processing function: {name}————————")
             # business_task_item_id = 

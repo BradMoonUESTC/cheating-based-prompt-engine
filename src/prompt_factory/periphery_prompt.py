@@ -18,7 +18,7 @@ class PeripheryPrompt:
     def role_set_tact_common():
         return """You are the best tact and TON blockchian auditor in the world"""
     def task_set_blockchain_common():
-        return """Your task is to pinpoint and correct any logical vulnerabilities present in the code. """
+        return """Your task is to pinpoint and correct any logical or code-error or financial related vulnerabilities present in the code. """
     def role_set_func_common():
         return """You are the best functional programming auditor in the world"""
 
