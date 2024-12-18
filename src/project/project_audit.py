@@ -1,7 +1,6 @@
 import csv
 from .project_parser import parse_project, BaseProjectFilter
 import re
-from graphviz import Digraph
 from library.sgp.utilities.contract_extractor import extract_state_variables_from_code, extract_state_variables_from_code_move
 
 class ProjectAudit(object):
