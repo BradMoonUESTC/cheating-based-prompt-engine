@@ -127,6 +127,7 @@ class ProjectAudit(object):
             upstream_tree = self.build_call_tree(func_name, relationships, 'upstream', func_map)
             downstream_tree = self.build_call_tree(func_name, relationships, 'downstream', func_map)
             # print(func['contract_code'])
+            state_variables = []
             if func['relative_file_path'].endswith('.move'):
                 state_variables = extract_state_variables_from_code_move(func['contract_code'],func['relative_file_path'])
             if func['relative_file_path'].endswith('.sol') or func['relative_file_path'].endswith('.fr'):
