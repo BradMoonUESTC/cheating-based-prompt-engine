@@ -55,7 +55,7 @@ def generate_excel(output_path, project_id):
     # 创建一个空的DataFrame来存储所有实体的数据
     data = []
     for entity in entities:
-        if "yes" in str(entity.result_gpt4).lower() and len(entity.business_flow_code)<=600:
+        if "yes" in str(entity.result_gpt4).lower() and len(entity.business_flow_code)>0:
             data.append({
                 '漏洞结果': entity.result,
                 'ID': entity.id,
