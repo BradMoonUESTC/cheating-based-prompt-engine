@@ -103,6 +103,7 @@ def parse(
             )
             f.write(s)
     return source_unit
+
 def find_tact_functions(text, filename, hash):
     regex = r"((?:init|receive|fun\s+\w+)\s*\([^)]*\)(?:\s*:\s*\w+)?\s*\{)"
     matches = re.finditer(regex, text)
@@ -603,6 +604,90 @@ def find_cairo_functions(text, filename,hash):
                 break
 
     return functions
+def find_fa_functions(text, filename, hash):
+    regex = r"function\s+(?:0x[a-fA-F0-9]+|\w+)\s*\([^{]*\)(?:\s*(?:private|public|nonPayable|payable))?\s*\{"
+    matches = re.finditer(regex, text)
+
+    functions = []
+    lines = text.split('\n')
+    line_starts = {i: sum(len(line) + 1 for line in lines[:i]) for i in range(len(lines))}
+
+    # First collect all function bodies to build complete contract code
+    function_bodies = []
+    for match in matches:
+        brace_count = 1
+        function_body_start = match.start()
+        inside_braces = True
+
+        for i in range(match.end(), len(text)):
+            if text[i] == '{':
+                brace_count += 1
+            elif text[i] == '}':
+                brace_count -= 1
+
+            if inside_braces and brace_count == 0:
+                function_body_end = i + 1
+                function_bodies.append(text[function_body_start:function_body_end])
+                break
+
+    # Complete contract code string
+    contract_code = "\n".join(function_bodies).strip()
+
+    # Iterate through matches again to create function definitions
+    for match in re.finditer(regex, text):
+        start_line_number = next(i for i, pos in line_starts.items() if pos > match.start()) - 1
+        brace_count = 1
+        function_body_start = match.start()
+        inside_braces = True
+
+        for i in range(match.end(), len(text)):
+            if text[i] == '{':
+                brace_count += 1
+            elif text[i] == '}':
+                brace_count -= 1
+
+            if inside_braces and brace_count == 0:
+                function_body_end = i + 1
+                end_line_number = next(i for i, pos in line_starts.items() if pos > function_body_end) - 1
+                function_body = text[function_body_start:function_body_end]
+                function_body_lines = function_body.count('\n') + 1
+                break
+
+        # Extract function name and modifiers
+        function_header = text[match.start():match.end()]
+        func_name = re.search(r'function\s+(0x[a-fA-F0-9]+|\w+)', function_header).group(1)
+        modifiers = []
+        
+        # Check for modifiers
+        if 'private' in function_header:
+            modifiers.append('private')
+        if 'public' in function_header:
+            modifiers.append('public')
+        if 'payable' in function_header:
+            modifiers.append('payable')
+        if 'nonPayable' in function_header:
+            modifiers.append('nonPayable')
+        if 'external' in function_header:
+            modifiers.append('external')
+
+        functions.append({
+            'type': 'FunctionDefinition',
+            'name': 'special_' + func_name,
+            'start_line': start_line_number + 1,
+            'end_line': end_line_number,
+            'offset_start': 0,
+            'offset_end': 0,
+            'content': function_body,
+            'contract_name': filename.replace('.fr', '_fa' + str(hash)),
+            'contract_code': contract_code,
+            'modifiers': modifiers,
+            'stateMutability': None,
+            'returnParameters': None,
+            'visibility': 'public' if 'public' or 'external' in modifiers else 'private',
+            'node_count': function_body_lines
+        })
+
+    return functions
 
 def get_antlr_parsing(path):
     with open(path, 'r', encoding='utf-8', errors="ignore") as file:
@@ -627,6 +712,9 @@ def get_antlr_parsing(path):
     if ".fc" in str(path):
         func_functions = find_func_functions(code, filename,hash_value)
         return func_functions
+    if ".fr" in str(path):  # Add FA file handling
+        fa_functions = find_fa_functions(code, filename,hash_value)
+        return fa_functions
     else:
         input_stream = ANTLRInputStream(code)
         lexer = SolidityLexer(input_stream)
