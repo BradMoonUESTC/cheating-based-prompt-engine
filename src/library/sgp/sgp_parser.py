@@ -103,6 +103,7 @@ def parse(
             )
             f.write(s)
     return source_unit
+
 def find_tact_functions(text, filename, hash):
     regex = r"((?:init|receive|fun\s+\w+)\s*\([^)]*\)(?:\s*:\s*\w+)?\s*\{)"
     matches = re.finditer(regex, text)
@@ -340,6 +341,172 @@ def find_rust_functions(text, filename,hash):
                     'node_count': function_body_lines
                 })
                 break
+
+    return functions
+def find_java_functions(text, filename, hash):
+    # 匹配Java方法定义的正则表达式
+    regex = r"""
+        # 注解部分（支持多行注解和嵌套括号）
+        (?:@[\w.]+                     # 注解名称
+            (?:\s*\(                   # 开始括号
+                (?:[^()]|\([^()]*\))*  # 注解参数，支持嵌套括号
+            \))?                       # 结束括号
+        \s*)*
+        
+        # 所有可能的修饰符组合
+        (?:(?:public|private|protected|
+            static|final|native|
+            synchronized|abstract|
+            transient|volatile|strictfp|
+            default)\s+)*
+        
+        # 泛型返回类型（支持嵌套泛型）
+        (?:<(?:[^<>]|<[^<>]*>)*>\s*)?
+        
+        # 返回类型
+        (?:(?:[\w.$][\w.$]*\s*(?:\[\s*\]\s*)*)|\s*void\s+)
+        
+        # 方法名（排除非法情况）
+        (?<!new\s)
+        (?<!return\s)
+        (?<!throw\s)
+        (?<!super\.)
+        (?<!this\.)
+        (?<!\.)  # 防止匹配方法调用
+        ([\w$]+)\s*
+        
+        # 方法的泛型参数
+        (?:<(?:[^<>]|<[^<>]*>)*>\s*)?
+        
+        # 参数列表（支持复杂参数）
+        \(\s*
+        (?:
+            (?:
+                (?:final\s+)?              # 可选的final修饰符
+                (?:[\w.$][\w.$]*\s*       # 参数类型
+                    (?:<(?:[^<>]|<[^<>]*>)*>\s*)?  # 参数的泛型部分
+                    (?:\[\s*\]\s*)*        # 数组标记
+                    \s+[\w$]+              # 参数名
+                    (?:\s*,\s*)?           # 可能的逗号
+                )*
+            )?
+        )\s*\)
+        
+        # throws声明（可选）
+        (?:\s*throws\s+
+            (?:[\w.$][\w.$]*
+                (?:\s*,\s*[\w.$][\w.$]*)*
+            )?
+        )?
+        
+        # 方法体或分号
+        \s*(?:\{|;)
+        
+        # 负向前瞻，确保不是在catch块或其他非方法上下文中
+        (?!\s*catch\b)
+    """
+    
+    functions = []
+    matches = re.finditer(regex, text, re.VERBOSE | re.MULTILINE | re.DOTALL)
+    
+    # 用于计算行号
+    lines = text.split('\n')
+    line_starts = {i: sum(len(line) + 1 for line in lines[:i]) for i in range(len(lines))}
+
+    # 用于记录找到的所有完整函数体，供后续处理
+    all_function_bodies = []
+    
+    for match in matches:
+        match_text = match.group()
+        
+        # 跳过常见的误匹配情况
+        if any([
+            'catch' in match_text,                    # catch块
+            'super.' in match_text,                   # super调用
+            'this.' in match_text,                    # this调用
+            '.clone()' in match_text,                 # 方法调用
+            match_text.strip().startswith('return'),  # return语句
+            'new ' in text[max(0, match.start()-4):match.start()], # 构造器表达式
+            '=>' in match_text,                       # lambda表达式
+        ]):
+            continue
+
+        # 获取方法名
+        method_name = match.group(1)
+        
+        # 处理方法体
+        if match_text.strip().endswith(';'):
+            # 对于没有方法体的方法，只保留接口方法和抽象方法
+            if not ('abstract' in match_text.lower() or 'interface' in text[:match.start()].lower()):
+                continue
+            function_body = match_text
+            start_pos = match.start()
+            end_pos = match.end()
+            function_body_lines = 1
+        else:
+            # 处理有方法体的方法
+            brace_count = 1
+            start_pos = match.start()
+            i = match.end()
+            
+            # 寻找匹配的结束大括号
+            while i < len(text) and brace_count > 0:
+                if text[i] == '{':
+                    brace_count += 1
+                elif text[i] == '}':
+                    brace_count -= 1
+                i += 1
+            
+            if brace_count == 0:
+                end_pos = i
+                function_body = text[start_pos:end_pos]
+                function_body_lines = function_body.count('\n') + 1
+            else:
+                continue
+
+        # 计算行号
+        start_line = sum(1 for _ in text[:start_pos].splitlines())
+        end_line = sum(1 for _ in text[:end_pos].splitlines())
+        
+        # 确定可见性
+        visibility = 'package'  # 默认包级别访问权限
+        if 'public' in match_text:
+            visibility = 'public'
+        elif 'private' in match_text:
+            visibility = 'private'
+        elif 'protected' in match_text:
+            visibility = 'protected'
+
+        # 获取修饰符
+        modifiers = []
+        modifier_list = ['static', 'final', 'native', 'synchronized', 
+                        'abstract', 'transient', 'volatile', 'strictfp']
+        for modifier in modifier_list:
+            if re.search(r'\b' + modifier + r'\b', match_text):
+                modifiers.append(modifier)
+
+        # 记录函数体用于后续处理
+        all_function_bodies.append(function_body)
+        
+        # 创建函数信息对象
+        function_info = {
+            'type': 'FunctionDefinition',
+            'name': 'special_' + method_name,
+            'start_line': start_line + 1,
+            'end_line': end_line,
+            'offset_start': start_pos,
+            'offset_end': end_pos,
+            'content': function_body,
+            'contract_name': filename.replace('.java', ''),
+            'contract_code': '\n'.join(all_function_bodies),
+            'modifiers': modifiers,
+            'stateMutability': None,
+            'returnParameters': None,
+            'visibility': visibility,
+            'node_count': function_body_lines
+        }
+        
+        functions.append(function_info)
 
     return functions
 def find_move_functions(text, filename, hash):
@@ -603,6 +770,90 @@ def find_cairo_functions(text, filename,hash):
                 break
 
     return functions
+def find_fa_functions(text, filename, hash):
+    regex = r"function\s+(?:0x[a-fA-F0-9]+|\w+)\s*\([^{]*\)(?:\s*(?:private|public|nonPayable|payable))?\s*\{"
+    matches = re.finditer(regex, text)
+
+    functions = []
+    lines = text.split('\n')
+    line_starts = {i: sum(len(line) + 1 for line in lines[:i]) for i in range(len(lines))}
+
+    # First collect all function bodies to build complete contract code
+    function_bodies = []
+    for match in matches:
+        brace_count = 1
+        function_body_start = match.start()
+        inside_braces = True
+
+        for i in range(match.end(), len(text)):
+            if text[i] == '{':
+                brace_count += 1
+            elif text[i] == '}':
+                brace_count -= 1
+
+            if inside_braces and brace_count == 0:
+                function_body_end = i + 1
+                function_bodies.append(text[function_body_start:function_body_end])
+                break
+
+    # Complete contract code string
+    contract_code = "\n".join(function_bodies).strip()
+
+    # Iterate through matches again to create function definitions
+    for match in re.finditer(regex, text):
+        start_line_number = next(i for i, pos in line_starts.items() if pos > match.start()) - 1
+        brace_count = 1
+        function_body_start = match.start()
+        inside_braces = True
+
+        for i in range(match.end(), len(text)):
+            if text[i] == '{':
+                brace_count += 1
+            elif text[i] == '}':
+                brace_count -= 1
+
+            if inside_braces and brace_count == 0:
+                function_body_end = i + 1
+                end_line_number = next(i for i, pos in line_starts.items() if pos > function_body_end) - 1
+                function_body = text[function_body_start:function_body_end]
+                function_body_lines = function_body.count('\n') + 1
+                break
+
+        # Extract function name and modifiers
+        function_header = text[match.start():match.end()]
+        func_name = re.search(r'function\s+(0x[a-fA-F0-9]+|\w+)', function_header).group(1)
+        modifiers = []
+        
+        # Check for modifiers
+        if 'private' in function_header:
+            modifiers.append('private')
+        if 'public' in function_header:
+            modifiers.append('public')
+        if 'payable' in function_header:
+            modifiers.append('payable')
+        if 'nonPayable' in function_header:
+            modifiers.append('nonPayable')
+        if 'external' in function_header:
+            modifiers.append('external')
+
+        functions.append({
+            'type': 'FunctionDefinition',
+            'name': 'special_' + func_name,
+            'start_line': start_line_number + 1,
+            'end_line': end_line_number,
+            'offset_start': 0,
+            'offset_end': 0,
+            'content': function_body,
+            'contract_name': filename.replace('.fr', ''),
+            'contract_code': contract_code,
+            'modifiers': modifiers,
+            'stateMutability': None,
+            'returnParameters': None,
+            'visibility': 'public' if 'public' or 'external' in modifiers else 'private',
+            'node_count': function_body_lines
+        })
+
+    return functions
 
 def get_antlr_parsing(path):
     with open(path, 'r', encoding='utf-8', errors="ignore") as file:
@@ -627,6 +878,12 @@ def get_antlr_parsing(path):
     if ".fc" in str(path):
         func_functions = find_func_functions(code, filename,hash_value)
         return func_functions
+    if ".fr" in str(path):  # Add FA file handling
+        fa_functions = find_fa_functions(code, filename,hash_value)
+        return fa_functions
+    if ".java" in str(path):
+        java_functions = find_java_functions(code, filename,hash_value)
+        return java_functions
     else:
         input_stream = ANTLRInputStream(code)
         lexer = SolidityLexer(input_stream)

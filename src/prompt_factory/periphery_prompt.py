@@ -21,6 +21,8 @@ class PeripheryPrompt:
         return """Your task is to pinpoint and correct any logical or code-error or financial related vulnerabilities present in the code. """
     def role_set_func_common():
         return """You are the best functional programming auditor in the world"""
+    def role_set_java_common():
+        return """You are the best java auditor in the world"""
 
     def guidelines_v1():
         return """Follow the guidelines below for your response: 

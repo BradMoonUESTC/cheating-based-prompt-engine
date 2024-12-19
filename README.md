@@ -46,14 +46,9 @@ As of May 2024, this tool has helped identify vulnerabilities worth over $60,000
 
 ## 🛠️ Setup & Configuration
 
-1. Configure test environment in `src/main.py`:
-```python
-switch_production_or_test = 'test'
-```
+1. Place project under `src/dataset/agent-v1-c4`
 
-2. Place project under `src/dataset/agent-v1-c4`
-
-3. Configure project in `datasets.json`:
+2. Configure project in `datasets.json`:
 ```json
 {
     "StEverVault2": {
@@ -64,19 +59,54 @@ switch_production_or_test = 'test'
 }
 ```
 
-4. Create database using `src/db.sql`
+3. Create database using `src/db.sql`
 
-5. Configure `.env`:
+4. Configure `.env`:
 ```env
-DATABASE_URL=postgresql://postgres:1234@127.0.0.1:5432/postgres
-OPENAI_API_BASE="api.openai.com"
-OPENAI_API_KEY=xxxxxx
-BUSINESS_FLOW_MODEL_ID=gpt-4-turbo
+# Database Connection
+DATABASE_URL=postgresql://user:password@localhost:5432/dbname
+
+# API Settings
+OPENAI_API_BASE="api.example.com"
+OPENAI_API_KEY=sk-your-api-key-here
+
+# Model Settings
 VUL_MODEL_ID=gpt-4-turbo
-BUSINESS_FLOW_COUNT=10
+CLAUDE_MODEL=claude-3-5-sonnet-20240620
+
+# Azure Configuration
+AZURE_API_KEY="your-azure-api-key"
+AZURE_API_BASE="https://your-resource.openai.azure.com/"
+AZURE_API_VERSION="2024-02-15-preview"
+AZURE_DEPLOYMENT_NAME="your-deployment"
+
+# API Choice
+AZURE_OR_OPENAI="OPENAI"  # Options: OPENAI, AZURE, CLAUDE
+
+# Scan Parameters
+BUSINESS_FLOW_COUNT=4
 SWITCH_FUNCTION_CODE=False
 SWITCH_BUSINESS_CODE=True
+
+# Scan Focus Configuration
+# SCAN_FOCUS=[
+#     "Contract1",
+#     "Contract2",
+#     "Contract3"
+# ]
 ```
+## 🌈 Supported Languages
+
+- Solidity (.sol)
+- Rust (.rs)
+- Python (.py)
+- Move (.move)
+- Cairo (.cairo)
+- Tact (.tact)
+- Func (.fc)
+- Java (.java)
+- Fake Solidity (.fr) - For scanning Solidity pseudocode
+
 
 ## 📊 Scanning Results Guide
 
